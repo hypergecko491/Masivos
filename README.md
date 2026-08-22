@@ -40,6 +40,12 @@ Te pedirá un nombre de usuario y una contraseña (mínimo 8 caracteres).
 Puedes correr `npm run seed` las veces que quieras para dar de alta a más
 personas.
 
+Para ver qué usuarios están registrados (sin mostrar contraseñas):
+
+```bash
+npm run users
+```
+
 Inicia el servidor:
 
 ```bash
