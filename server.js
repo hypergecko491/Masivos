@@ -64,6 +64,41 @@ function limpiarIntentos(ip) {
   intentosLogin.delete(ip);
 }
 
+// ---------- Middleware de administración (para gestionar usuarios sin Shell) ----------
+const ADMIN_KEY = process.env.ADMIN_KEY;
+
+function requireAdminKey(req, res, next) {
+  if (!ADMIN_KEY) {
+    return res.status(503).json({ error: "ADMIN_KEY no está configurada en el servidor. Agrégala en las variables de entorno para usar estas rutas." });
+  }
+  const key = req.get("X-Admin-Key");
+  if (!key || key !== ADMIN_KEY) {
+    return res.status(401).json({ error: "Clave de administración inválida" });
+  }
+  next();
+}
+
+// Límite de intentos también para las rutas de administración
+const intentosAdmin = new Map();
+function limitarIntentosAdmin(req, res, next) {
+  const ip = req.ip;
+  const ahora = Date.now();
+  const registro = intentosAdmin.get(ip);
+  if (registro && ahora < registro.resetAt && registro.count >= 8) {
+    return res.status(429).json({ error: "Demasiados intentos. Espera unos minutos." });
+  }
+  next();
+}
+function registrarIntentoAdminFallido(ip) {
+  const ahora = Date.now();
+  const registro = intentosAdmin.get(ip);
+  if (!registro || ahora > registro.resetAt) {
+    intentosAdmin.set(ip, { count: 1, resetAt: ahora + 10 * 60 * 1000 });
+  } else {
+    registro.count++;
+  }
+}
+
 // ---------- Login / logout / sesión ----------
 app.post("/api/login", limitarIntentos, (req, res) => {
   const { username, password } = req.body || {};
@@ -143,6 +178,66 @@ app.get("/api/history", requireAuth, (req, res) => {
 
   const filas = db.prepare(sql).all(...params);
   res.json({ historial: filas });
+});
+
+// ---------- Administración de usuarios vía HTTP (sin necesitar Shell) ----------
+// Todas requieren el encabezado: X-Admin-Key: tu_clave_admin
+
+// Crear usuario
+app.post("/api/admin/users", limitarIntentosAdmin, requireAdminKey, (req, res) => {
+  const { username, password } = req.body || {};
+  if (!username || !password) {
+    return res.status(400).json({ error: "Usuario y contraseña requeridos" });
+  }
+  if (password.length < 8) {
+    registrarIntentoAdminFallido(req.ip);
+    return res.status(400).json({ error: "La contraseña debe tener al menos 8 caracteres" });
+  }
+
+  const existente = db.prepare("SELECT id FROM users WHERE username = ?").get(username);
+  if (existente) {
+    return res.status(409).json({ error: `Ya existe un usuario "${username}"` });
+  }
+
+  const hash = bcrypt.hashSync(password, 12);
+  db.prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)").run(username, hash);
+  res.json({ ok: true, mensaje: `Usuario "${username}" creado correctamente` });
+});
+
+// Listar usuarios (sin contraseñas)
+app.get("/api/admin/users", requireAdminKey, (req, res) => {
+  const usuarios = db.prepare("SELECT id, username, created_at FROM users ORDER BY created_at ASC").all();
+  res.json({ usuarios });
+});
+
+// Cambiar contraseña de un usuario existente
+app.put("/api/admin/users/:username/password", limitarIntentosAdmin, requireAdminKey, (req, res) => {
+  const { username } = req.params;
+  const { password } = req.body || {};
+  if (!password || password.length < 8) {
+    registrarIntentoAdminFallido(req.ip);
+    return res.status(400).json({ error: "La contraseña debe tener al menos 8 caracteres" });
+  }
+
+  const user = db.prepare("SELECT id FROM users WHERE username = ?").get(username);
+  if (!user) {
+    return res.status(404).json({ error: `No existe un usuario "${username}"` });
+  }
+
+  const hash = bcrypt.hashSync(password, 12);
+  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, user.id);
+  res.json({ ok: true, mensaje: `Contraseña de "${username}" actualizada` });
+});
+
+// Eliminar usuario
+app.delete("/api/admin/users/:username", requireAdminKey, (req, res) => {
+  const { username } = req.params;
+  const user = db.prepare("SELECT id FROM users WHERE username = ?").get(username);
+  if (!user) {
+    return res.status(404).json({ error: `No existe un usuario "${username}"` });
+  }
+  db.prepare("DELETE FROM users WHERE id = ?").run(user.id);
+  res.json({ ok: true, mensaje: `Usuario "${username}" eliminado` });
 });
 
 app.listen(PORT, () => {

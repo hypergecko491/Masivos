@@ -91,7 +91,54 @@ proveedor en particular.
 despliegues — así la cookie de sesión solo viaja por HTTPS, que es lo que
 esos servicios ya te dan por defecto.
 
-## 4. Cómo funciona el historial
+## 4. Gestionar usuarios sin usar el Shell de Render (plan gratuito)
+
+El "Shell" de Render (una terminal conectada al servidor) es solo para
+planes de pago. Como alternativa, el servidor tiene rutas protegidas por
+una clave secreta aparte (`ADMIN_KEY`) que puedes llamar desde tu propia
+computadora, con `curl` (ya viene incluido en Windows 10/11).
+
+**Primero:** genera una clave y agrégala en Render, en Environment
+Variables, como `ADMIN_KEY`:
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+Usa una clave **distinta** a la de `JWT_SECRET`. Guárdala en algún lugar
+seguro — cualquiera que la tenga puede crear/eliminar usuarios.
+
+**Crear un usuario** (desde CMD o PowerShell, reemplaza la URL y los datos):
+```bash
+curl -X POST https://tu-app.onrender.com/api/admin/users ^
+  -H "Content-Type: application/json" ^
+  -H "X-Admin-Key: TU_ADMIN_KEY" ^
+  -d "{\"username\":\"nuevo_usuario\",\"password\":\"contraseña_segura\"}"
+```
+(El `^` es para partir el comando en varias líneas en CMD de Windows; si
+lo pegas todo en una sola línea, quítalos.)
+
+**Ver todos los usuarios:**
+```bash
+curl https://tu-app.onrender.com/api/admin/users -H "X-Admin-Key: TU_ADMIN_KEY"
+```
+
+**Cambiar la contraseña de alguien:**
+```bash
+curl -X PUT https://tu-app.onrender.com/api/admin/users/nombre_usuario/password ^
+  -H "Content-Type: application/json" ^
+  -H "X-Admin-Key: TU_ADMIN_KEY" ^
+  -d "{\"password\":\"nueva_contraseña\"}"
+```
+
+**Eliminar a alguien:**
+```bash
+curl -X DELETE https://tu-app.onrender.com/api/admin/users/nombre_usuario ^
+  -H "X-Admin-Key: TU_ADMIN_KEY"
+```
+
+Si prefieres no usar la terminal, cualquier app tipo Postman o Insomnia
+también sirve — solo arma la misma petición con el header `X-Admin-Key`.
+
+## 5. Cómo funciona el historial
 
 Cada vez que alguien usa un botón de envío (WhatsApp, SMS, Correo o
 Gmail), el navegador manda al servidor: nombre del contacto, el número o
@@ -100,21 +147,24 @@ guarda en la tabla `history` de `data.db`. El contenido del mensaje y el
 archivo Excel **no** se guardan en el servidor — solo se procesan en el
 navegador de quien los sube.
 
-## 5. Respaldo de la base de datos
+## 6. Respaldo de la base de datos
 
 Todo vive en el archivo `data.db`, junto al servidor. Cópialo de vez en
 cuando a otro lugar si quieres tener respaldo del historial y los
 usuarios.
 
-## 6. Estructura del proyecto
+## 7. Estructura del proyecto
 
 ```
 envio-mensajes/
-  server.js        -> servidor Express (login, historial)
-  db.js             -> conexión y esquema de la base de datos
-  seed.js           -> script para crear usuarios desde la terminal
+  server.js         -> servidor Express (login, historial, admin de usuarios)
+  db.js              -> conexión y esquema de la base de datos
+  seed.js            -> crear usuarios desde la terminal (local)
+  list-users.js       -> ver usuarios desde la terminal (local)
+  reset-password.js    -> cambiar contraseñas desde la terminal (local)
+  delete-user.js         -> eliminar usuarios desde la terminal (local)
   package.json
-  .env.example       -> plantilla de variables de entorno
+  .env.example              -> plantilla de variables de entorno
   public/
     login.html       -> pantalla de inicio de sesión
     app.html          -> la herramienta de envío (requiere sesión activa)
