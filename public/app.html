@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Envío de WhatsApp</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #EEF1F5; min-height: 100vh; padding: 16px; color: #1c2530; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; background: #16233B; color: #fff; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 12.5px; }
+  .topbar .user { font-weight: 600; }
+  .topbar button { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; margin-left: 6px; }
+  .topbar button:hover { background: rgba(255,255,255,0.25); }
+  .gate { display: flex; align-items: center; justify-content: center; min-height: 60vh; font-size: 13px; color: #5b6b80; }
+  .app-content { display: none; }
+  .history-panel { background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(22,35,59,0.08); border: 1px solid #e3e8ee; display: none; }
+  .history-panel h2 { font-size: 14px; color: #16233B; margin-bottom: 10px; }
+  .history-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .history-filters select, .history-filters input { flex: 1; min-width: 120px; border: 1.5px solid #dde3ea; border-radius: 6px; padding: 8px; font-size: 12.5px; }
+  .history-table-wrap { overflow-x: auto; }
+  table.history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.history-table th { text-align: left; color: #5b6b80; font-weight: 700; text-transform: uppercase; font-size: 10.5px; padding: 6px 8px; border-bottom: 2px solid #e3e8ee; white-space: nowrap; }
+  table.history-table td { padding: 7px 8px; border-bottom: 1px solid #eef1f5; white-space: nowrap; }
+  .canal-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10.5px; font-weight: 700; color: #fff; }
+  .canal-badge.whatsapp { background: #1c7c3f; }
+  .canal-badge.sms { background: #2B4C7E; }
+  .canal-badge.correo, .canal-badge.gmail { background: #16233B; }
+  .history-empty { font-size: 12.5px; color: #8b96a3; text-align: center; padding: 14px; }
+  h1 { font-size: 18px; color: #16233B; margin-bottom: 4px; text-align: center; letter-spacing: 0.2px; }
+  .subtitle { font-size: 13px; color: #5b6b80; text-align: center; margin-bottom: 14px; }
+  .editor-box { background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(22,35,59,0.08); border: 1px solid #e3e8ee; }
+  .editor-box label { font-size: 11px; font-weight: 700; color: #2B4C7E; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.6px; }
+  .hint { font-size: 11px; color: #8b96a3; margin-top: 6px; line-height: 1.4; }
+  input[type=text], textarea { width: 100%; border: 1.5px solid #dde3ea; border-radius: 6px; padding: 10px; font-size: 13px; font-family: inherit; resize: vertical; outline: none; color: #1c2530; }
+  input[type=text]:focus, textarea:focus { border-color: #2B4C7E; }
+  .row2 { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .row2 > div { flex: 1; min-width: 140px; }
+  .btn-parse { background: #16233B; color: #fff; border: none; border-radius: 8px; padding: 12px 20px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; letter-spacing: 0.3px; }
+  .btn-parse:active { opacity: 0.85; }
+  .btn-excel { background: #1c7c3f; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-block; }
+  .file-hidden { display: none; }
+  .excel-status { font-size: 11.5px; color: #5b6b80; margin-top: 6px; }
+  .error { color: #b3261e; font-size: 12px; margin-top: 6px; display: none; white-space: pre-line; }
+  .progress-bar { background: #dde3ea; border-radius: 20px; height: 8px; margin-bottom: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #1c7c3f; border-radius: 20px; transition: width 0.3s; width: 0%; }
+  .progress-label { font-size: 12px; color: #5b6b80; text-align: center; margin-bottom: 14px; }
+  .card { background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(22,35,59,0.08); border: 1px solid #e3e8ee; scroll-margin-top: 16px; }
+  .card.sent { opacity: 0.55; }
+  .card.next { border-color: #1c7c3f; box-shadow: 0 0 0 2px rgba(28,124,63,0.15); }
+  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .num-badge { background: #16233B; color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .card.sent .num-badge { background: #1c7c3f; }
+  .contact-info { flex: 1; min-width: 0; }
+  .cname { font-size: 14px; font-weight: 600; color: #16233B; }
+  .cphone { font-size: 12px; color: #5b6b80; }
+  .cphone.badphone { color: #b3261e; font-weight: 600; }
+  .cemail { font-size: 12px; color: #5b6b80; }
+  .cemail.bademail { color: #b3261e; font-weight: 600; }
+  .caddress { font-size: 11.5px; color: #8b96a3; }
+  .msg-edit { width: 100%; border: 1px solid #e3e8ee; border-radius: 6px; padding: 8px; font-size: 12.5px; font-family: inherit; color: #333; min-height: 90px; margin-bottom: 4px; }
+  .charcount { font-size: 10.5px; color: #8b96a3; text-align: right; margin-bottom: 6px; }
+  .charcount.warn { color: #b3261e; font-weight: 600; }
+  .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-send { background: #1c7c3f; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 90px; text-decoration: none; text-align: center; display: inline-block; }
+  .btn-send:disabled { background: #a9c2b0; cursor: not-allowed; }
+  .btn-sms { background: #2B4C7E; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 90px; text-decoration: none; text-align: center; display: inline-block; }
+  .btn-sms:disabled { background: #a7b6cc; cursor: not-allowed; }
+  .btn-correo { background: #16233B; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 90px; text-decoration: none; text-align: center; display: inline-block; }
+  .btn-correo:disabled { background: #a3aab8; cursor: not-allowed; }
+  .btn-gmail { background: #c5221f; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 90px; text-decoration: none; text-align: center; display: inline-block; }
+  .btn-gmail:disabled { background: #e0a19f; cursor: not-allowed; }
+  .btn-copy { background: #eef1f5; color: #2B4C7E; border: 1px solid #dde3ea; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-sent { background: #e3e8ee; color: #8b96a3; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; }
+  #sendSection { display: none; }
+  .note { font-size: 11.5px; color: #8b96a3; text-align: center; margin: 10px 0 4px; line-height: 1.5; }
+  .warn-box { background: #fff8e1; border: 1px solid #f0d99a; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #6b5500; margin-bottom: 12px; line-height: 1.5; }
+  .privacy-box { background: #eef4ff; border: 1px solid #c7d7f5; border-radius: 8px; padding: 10px 12px; font-size: 11.5px; color: #2B4C7E; margin-bottom: 12px; line-height: 1.5; }
+  .summary-box { background: #f2f7f4; border: 1px solid #cde3d6; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #1c7c3f; margin-bottom: 10px; display: none; font-weight: 600; text-align: center; }
+  .wait-label { background: #fff3e0; border: 1px solid #f0c78a; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; color: #8a5a00; margin-bottom: 10px; display: none; font-weight: 600; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">Verificando sesión...</div>
+
+<div class="app-content" id="appContent">
+
+<div class="topbar">
+  <div class="user" id="userLabel"></div>
+  <div>
+    <button onclick="toggleHistorial()" id="btnToggleHist">📋 Ver historial</button>
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="history-panel" id="historyPanel">
+  <h2>📋 Historial de envíos</h2>
+  <div class="history-filters">
+    <select id="filtroCanal" onchange="cargarHistorial()">
+      <option value="">Todos los canales</option>
+      <option value="whatsapp">WhatsApp</option>
+      <option value="sms">SMS</option>
+      <option value="correo">Correo</option>
+      <option value="gmail">Gmail</option>
+    </select>
+    <input type="text" id="filtroBusqueda" placeholder="Buscar nombre o destino..." oninput="debounceHistorial()">
+  </div>
+  <div class="history-table-wrap">
+    <table class="history-table" id="historyTable" style="display:none;">
+      <thead>
+        <tr><th>Fecha</th><th>Usuario</th><th>Contacto</th><th>Destino</th><th>Canal</th></tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+    <div class="history-empty" id="historyEmpty">Sin registros todavía.</div>
+  </div>
+</div>
+
+<h1>💬📧 Envío de WhatsApp, SMS y Correo</h1>
+<p class="subtitle">Genera mensajes personalizados y ábrelos uno por uno en cada canal</p>
+
+<div class="privacy-box">
+  🔒 Los contactos y la plantilla se procesan solo en tu navegador. El servidor únicamente guarda el historial de envíos (contacto, destino, canal y fecha) para que quede registro de quién contactó a quién — no guarda el Excel completo ni el contenido de los mensajes.
+</div>
+
+<div class="warn-box">
+  ⚠️ Importante: no existe una forma legítima de enviar WhatsApp de forma 100% automática sin dar clic. Esta herramienta abre cada chat con el mensaje ya escrito, pero tú das clic en "Enviar" dentro de WhatsApp para cada contacto. Herramientas que automatizan ese clic violan los Términos de Servicio de WhatsApp y arriesgan que te bloqueen el número — por eso este flujo es manual, uno por uno.<br><br>
+  📱 El botón "SMS" abre tu app de mensajes con el número y texto ya cargados (solo funciona en celular, no en computadora). Los SMS normales dependen de tu plan telefónico y pueden generar costo; los mensajes largos se dividen en varios SMS por el operador.<br><br>
+  📧 El botón "Correo" abre tu app de correo predeterminada; "Gmail" abre la redacción en Gmail desde el navegador (útil si no tienes app de correo instalada). Ambos requieren el correo del contacto en la columna C del Excel, o como tercer dato al pegar manualmente.<br><br>
+  ⏱️ Después de cada envío por WhatsApp, ese botón se bloquea 10 segundos antes de poder enviar el siguiente WhatsApp. Esto evita errores por hacer clic demasiado rápido (ventanas emergentes bloqueadas por el navegador, límites de WhatsApp Web, etc.). SMS, Correo y Gmail no tienen este bloqueo.
+</div>
+
+<div class="editor-box">
+  <label>📊 Cargar contactos desde Excel</label>
+  <input type="file" id="excelFile" class="file-hidden" accept=".xlsx,.xls,.csv" onchange="cargarExcel(event)">
+  <button class="btn-excel" onclick="document.getElementById('excelFile').click()">Elegir archivo Excel</button>
+  <div class="excel-status" id="excelStatus"></div>
+  <p class="hint">Columna A: <b>Nombre</b>. Columna B: <b>Teléfono</b>. Columna C (opcional): <b>Correo</b>. Columna D (opcional): <b>Domicilio</b>. Si la primera fila es encabezado, se detecta y se ignora automáticamente.</p>
+</div>
+
+<div class="editor-box">
+  <label>📇 O pega contactos manualmente (Nombre; Teléfono; Correo; Domicilio — uno por línea)</label>
+  <textarea id="inputContactos" rows="8" placeholder="Ej:&#10;Juan Pérez López; 2221234567; juan.perez@ejemplo.com; Av. Reforma 123, Col. Centro, Puebla&#10;María García Ruiz; 5215512345678; ; Calle 5 de Mayo 45, Cholula"></textarea>
+  <p class="hint">Los campos se separan con <b>punto y coma ( ; )</b> — así el domicilio puede llevar comas sin problema. Correo y domicilio son opcionales: si omites uno, deja el campo vacío entre los dos puntos y coma (como en el segundo ejemplo, sin correo).</p>
+</div>
+
+<div class="editor-box">
+  <label>Asunto del correo (aplica a todos)</label>
+  <input type="text" id="asunto" value="Aviso">
+</div>
+
+<div class="editor-box">
+  <div class="row2">
+    <div>
+      <label>Código de país por defecto</label>
+      <input type="text" id="codigoPais" value="52">
+      <p class="hint">Se agrega solo a números de 10 dígitos sin código. México = 52.</p>
+    </div>
+  </div>
+</div>
+
+<div class="editor-box">
+  <label>💬 Plantilla del mensaje</label>
+  <textarea id="inputPlantilla" rows="10" placeholder="Hola {NOMBRE}, te escribimos para..."></textarea>
+  <p class="hint">Usa {NOMBRE} para el nombre y {DIRECCION} para el domicilio de cada persona. Se genera un mensaje por contacto, editable antes de enviarlo.</p>
+</div>
+
+<p class="error" id="errorMsg"></p>
+<button class="btn-parse" onclick="generarLista()">✅ Generar lista de mensajes</button>
+
+<div id="sendSection">
+  <br>
+  <div class="summary-box" id="summaryBox"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel"></div>
+  <div class="wait-label" id="waitLabel"></div>
+
+  <div id="list"></div>
+
+  <p class="note">"WhatsApp" abre el chat con el mensaje ya escrito. "SMS" abre tu app de mensajes (solo celular). "Correo" abre tu app de correo predeterminada; "Gmail" abre la redacción en el navegador. En todos los casos, tú das el clic final de "Enviar" dentro de cada app. "Copiar" pega el texto para pegarlo donde quieras.<br><br>El progreso se guarda solo mientras esta pestaña está abierta; si recargas la página se reinicia.</p>
+</div>
+
+<script>
+let data = [];
+const sentSet = new Set(); // en memoria, se reinicia al recargar
+let waitUntil = 0;      // timestamp (ms) hasta el cual los botones de envío están bloqueados
+let waitInterval = null;
+
+function enEsperaDeEnvio() {
+  return Date.now() < waitUntil;
+}
+
+function iniciarEsperaEnvio() {
+  waitUntil = Date.now() + 10000; // 10 segundos
+  actualizarEtiquetaEspera();
+  render();
+  if (waitInterval) clearInterval(waitInterval);
+  waitInterval = setInterval(() => {
+    if (Date.now() >= waitUntil) {
+      clearInterval(waitInterval);
+      waitInterval = null;
+      actualizarEtiquetaEspera();
+      render();
+    } else {
+      actualizarEtiquetaEspera();
+    }
+  }, 250);
+}
+
+function actualizarEtiquetaEspera() {
+  const el = document.getElementById("waitLabel");
+  if (!el) return;
+  const segundos = Math.ceil(Math.max(0, waitUntil - Date.now()) / 1000);
+  if (segundos > 0) {
+    el.style.display = "block";
+    el.textContent = `⏱️ Espera ${segundos}s antes de enviar el siguiente WhatsApp...`;
+  } else {
+    el.style.display = "none";
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Limpia un número: deja solo dígitos, quita 00/+ inicial, agrega código de país si hace falta
+function normalizarTelefono(raw) {
+  let digits = String(raw).replace(/\D/g, "");
+  digits = digits.replace(/^00/, "");
+  const codigo = (document.getElementById("codigoPais").value || "").replace(/\D/g, "");
+  if (digits.length === 10 && codigo) {
+    digits = codigo + digits;
+  }
+  return digits;
+}
+
+function telefonoValido(digits) {
+  return /^\d{10,15}$/.test(digits);
+}
+
+function esEmailValido(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// ---------- Carga desde Excel ----------
+function cargarExcel(evt) {
+  const file = evt.target.files[0];
+  const statusEl = document.getElementById("excelStatus");
+  if (!file) return;
+
+  statusEl.textContent = "Leyendo archivo...";
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, { type: "array" });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
+
+      const lineas = [];
+      let saltados = 0;
+
+      rows.forEach((row, idx) => {
+        if (!row || row.length < 2) { saltados++; return; }
+        const nombre = String(row[0] || "").trim();
+        const telRaw = String(row[1] || "").trim();
+        const correoRaw = String(row[2] || "").trim();
+        const direccionRaw = String(row[3] || "").trim();
+        if (!nombre || !telRaw) { saltados++; return; }
+
+        // Detecta fila de encabezado (ej. "Nombre" / "Teléfono", sin dígitos en el teléfono)
+        if (idx === 0 && !/\d/.test(telRaw)) { saltados++; return; }
+
+        lineas.push(`${nombre}; ${telRaw}; ${correoRaw}; ${direccionRaw}`);
+      });
+
+      if (lineas.length === 0) {
+        statusEl.textContent = "⚠️ No se encontraron filas válidas con Nombre y Teléfono en las dos primeras columnas.";
+        return;
+      }
+
+      document.getElementById("inputContactos").value = lineas.join("\n");
+      statusEl.textContent = `✅ ${lineas.length} contacto(s) cargados desde "${file.name}"${saltados > 0 ? ` (${saltados} fila(s) omitida(s) por datos incompletos)` : ""}.`;
+    } catch (err) {
+      statusEl.textContent = "⚠️ No se pudo leer el archivo. Verifica que sea un .xlsx, .xls o .csv válido.";
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ---------- Generar lista ----------
+function generarLista() {
+  const errEl = document.getElementById("errorMsg");
+  errEl.style.display = "none";
+
+  const lineas = document.getElementById("inputContactos").value
+    .split("\n").map(l => l.trim()).filter(l => l.length > 0);
+  const plantilla = document.getElementById("inputPlantilla").value;
+
+  if (lineas.length === 0 || plantilla.trim().length === 0) {
+    errEl.textContent = "⚠️ Debes cargar/pegar contactos y una plantilla de mensaje.";
+    errEl.style.display = "block";
+    return;
+  }
+
+  const contactos = [];
+  const numsVistos = new Map();
+  const avisos = [];
+
+  for (const linea of lineas) {
+    const partes = linea.split(";").map(p => p.trim());
+    if (partes.length < 2) {
+      errEl.textContent = `⚠️ Esta línea no tiene el formato "Nombre; teléfono; correo; domicilio": "${linea}"`;
+      errEl.style.display = "block";
+      return;
+    }
+    const nombre = partes[0];
+    const telRaw = partes[1];
+    const correoRaw = partes.length > 2 ? partes[2] : "";
+    const direccionRaw = partes.length > 3 ? partes.slice(3).join(";").trim() : "";
+    const tel = normalizarTelefono(telRaw);
+
+    if (!nombre) {
+      errEl.textContent = `⚠️ Falta el nombre en esta línea: "${linea}"`;
+      errEl.style.display = "block";
+      return;
+    }
+
+    if (correoRaw && !esEmailValido(correoRaw)) {
+      avisos.push(`El correo "${correoRaw}" de ${nombre} no parece válido — se ignorará para ese contacto.`);
+    }
+
+    if (numsVistos.has(tel) && tel) {
+      avisos.push(`"${telRaw}" aparece más de una vez (${numsVistos.get(tel)} y ${nombre}).`);
+    } else if (tel) {
+      numsVistos.set(tel, nombre);
+    }
+
+    contactos.push({ nombre, telefono: tel, telefonoOriginal: telRaw, correo: correoRaw, direccion: direccionRaw });
+  }
+
+  sentSet.clear();
+  data = contactos.map(c => ({
+    nombre: c.nombre,
+    telefono: c.telefono,
+    telefonoOriginal: c.telefonoOriginal,
+    valido: telefonoValido(c.telefono),
+    correo: c.correo && esEmailValido(c.correo) ? c.correo : "",
+    direccion: c.direccion,
+    msg: plantilla.replace(/\{NOMBRE\}/g, c.nombre).replace(/\{DIRECCION\}/g, c.direccion || "")
+  }));
+
+  const invalidos = data.filter(d => !d.valido).length;
+  const conCorreo = data.filter(d => d.correo).length;
+  const sinDireccion = data.filter(d => !d.direccion).length;
+  if (invalidos > 0) {
+    avisos.push(`${invalidos} número(s) no parecen válidos (deben quedar entre 10 y 15 dígitos con código de país). Revísalos en las tarjetas marcadas en rojo — el botón "Enviar" estará deshabilitado para esos.`);
+  }
+  if (plantilla.includes("{DIRECCION}") && sinDireccion > 0) {
+    avisos.push(`${sinDireccion} contacto(s) no tienen domicilio — en esos mensajes {DIRECCION} quedará vacío, revísalos antes de enviar.`);
+  }
+
+  if (avisos.length > 0) {
+    errEl.textContent = "⚠️ Avisos:\n" + avisos.join("\n");
+    errEl.style.display = "block";
+  }
+
+  const summaryBox = document.getElementById("summaryBox");
+  summaryBox.textContent = `${data.length} contacto${data.length === 1 ? "" : "s"} cargado${data.length === 1 ? "" : "s"} (${data.length - invalidos} listos para WhatsApp/SMS, ${conCorreo} con correo válido)`;
+  summaryBox.style.display = "block";
+
+  document.getElementById("sendSection").style.display = "block";
+  render();
+  document.getElementById("sendSection").scrollIntoView({ behavior: "smooth" });
+}
+
+function updateProgress() {
+  const count = sentSet.size;
+  document.getElementById("progressFill").style.width = (count / data.length * 100) + "%";
+  document.getElementById("progressLabel").textContent = `${count} de ${data.length} enviados`;
+}
+
+function onEdit(i, el) {
+  data[i].msg = el.value;
+  updateCharCount(i, el.value);
+}
+
+function updateCharCount(i, msg) {
+  const el = document.getElementById(`charcount-${i}`);
+  if (!el) return;
+  el.textContent = msg.length > 1500
+    ? `⚠️ Mensaje largo (${msg.length} caracteres) — revisa que se vea completo en WhatsApp`
+    : `${msg.length} caracteres`;
+  el.className = "charcount" + (msg.length > 1500 ? " warn" : "");
+}
+
+function buildWaUrl(i) {
+  const item = data[i];
+  return `https://wa.me/${item.telefono}?text=${encodeURIComponent(item.msg)}`;
+}
+
+// iOS requiere "&body=" (con & aunque no haya otros parámetros antes), Android acepta "?body="
+function buildSmsUrl(i) {
+  const item = data[i];
+  const esIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const separador = esIOS ? "&" : "?";
+  return `sms:+${item.telefono}${separador}body=${encodeURIComponent(item.msg)}`;
+}
+
+function buildMailto(i) {
+  const asunto = document.getElementById("asunto").value || "";
+  const item = data[i];
+  return `mailto:${encodeURIComponent(item.correo)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(item.msg)}`;
+}
+
+function buildGmailUrl(i) {
+  const asunto = document.getElementById("asunto").value || "";
+  const item = data[i];
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(item.correo)}&su=${encodeURIComponent(asunto)}&body=${encodeURIComponent(item.msg)}`;
+}
+
+// Mismo truco que con mailto: un <a> temporal es más confiable que location.href
+function abrirEnlace(url) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function irAlSiguiente(iActual) {
+  for (let j = iActual + 1; j < data.length; j++) {
+    if (!sentSet.has(j)) {
+      const el = document.getElementById(`card-${j}`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+  }
+}
+
+function enviarWhatsapp(i) {
+  if (!data[i].valido || enEsperaDeEnvio()) return;
+  window.open(buildWaUrl(i), "_blank");
+  registrarHistorial(data[i].nombre, data[i].telefono, "whatsapp");
+  setTimeout(() => {
+    sentSet.add(i);
+    irAlSiguiente(i);
+    iniciarEsperaEnvio();
+  }, 800);
+}
+
+function enviarSms(i) {
+  if (!data[i].valido) return;
+  abrirEnlace(buildSmsUrl(i));
+  registrarHistorial(data[i].nombre, data[i].telefono, "sms");
+  setTimeout(() => {
+    sentSet.add(i);
+    render();
+    irAlSiguiente(i);
+  }, 1200);
+}
+
+function enviarCorreo(i) {
+  if (!data[i].correo) return;
+  abrirEnlace(buildMailto(i));
+  registrarHistorial(data[i].nombre, data[i].correo, "correo");
+  setTimeout(() => {
+    sentSet.add(i);
+    render();
+    irAlSiguiente(i);
+  }, 1200);
+}
+
+function abrirGmail(i) {
+  if (!data[i].correo) return;
+  window.open(buildGmailUrl(i), "_blank");
+  registrarHistorial(data[i].nombre, data[i].correo, "gmail");
+  setTimeout(() => {
+    sentSet.add(i);
+    render();
+    irAlSiguiente(i);
+  }, 800);
+}
+
+function copiarMensaje(i) {
+  const item = data[i];
+  const destinoCorreo = item.correo ? `\nCorreo: ${item.correo}` : "";
+  const texto = `Para: ${item.nombre} (${item.telefonoOriginal})${destinoCorreo}\n\n${item.msg}`;
+  navigator.clipboard.writeText(texto).then(() => {
+    const btn = document.getElementById(`copybtn-${i}`);
+    if (btn) {
+      const old = btn.textContent;
+      btn.textContent = "Copiado";
+      setTimeout(() => btn.textContent = old, 1200);
+    }
+  });
+}
+
+function undoSent(i) {
+  sentSet.delete(i);
+  render();
+}
+
+function render() {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  const enEspera = enEsperaDeEnvio();
+
+  let siguientePendiente = -1;
+  for (let j = 0; j < data.length; j++) {
+    if (!sentSet.has(j)) { siguientePendiente = j; break; }
+  }
+
+  data.forEach((item, i) => {
+    const isSent = sentSet.has(i);
+    const isNext = i === siguientePendiente;
+    const card = document.createElement("div");
+    card.className = "card" + (isSent ? " sent" : "") + (isNext ? " next" : "");
+    card.id = `card-${i}`;
+
+    const nombreSafe = escapeHtml(item.nombre);
+    const telSafe = escapeHtml(item.telefonoOriginal);
+    const correoSafe = escapeHtml(item.correo);
+    const direccionSafe = escapeHtml(item.direccion);
+    const msgSafe = escapeHtml(item.msg);
+
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="num-badge">${isSent ? "✓" : i + 1}</div>
+        <div class="contact-info">
+          <div class="cname">${nombreSafe}</div>
+          <div class="cphone${item.valido ? "" : " badphone"}">${telSafe}${item.valido ? "" : " — número inválido"}</div>
+          ${item.correo ? `<div class="cemail">${correoSafe}</div>` : `<div class="cemail">Sin correo — solo WhatsApp/SMS</div>`}
+          ${item.direccion ? `<div class="caddress">📍 ${direccionSafe}</div>` : ""}
+        </div>
+      </div>
+      <textarea class="msg-edit" oninput="onEdit(${i}, this)" ${isSent ? "disabled" : ""}>${msgSafe}</textarea>
+      <div class="charcount" id="charcount-${i}"></div>
+      <div class="card-actions">
+        ${isSent
+          ? `<button class="btn-sent" onclick="undoSent(${i})">Deshacer</button>`
+          : `<button class="btn-send" onclick="enviarWhatsapp(${i})" ${(item.valido && !enEspera) ? "" : "disabled"}>WhatsApp</button>
+             <button class="btn-sms" onclick="enviarSms(${i})" ${item.valido ? "" : "disabled"}>SMS</button>
+             <button class="btn-correo" onclick="enviarCorreo(${i})" ${item.correo ? "" : "disabled"}>Correo</button>
+             <button class="btn-gmail" onclick="abrirGmail(${i})" ${item.correo ? "" : "disabled"}>Gmail</button>
+             <button class="btn-copy" id="copybtn-${i}" onclick="copiarMensaje(${i})">Copiar</button>`
+        }
+      </div>
+    `;
+    list.appendChild(card);
+    updateCharCount(i, item.msg);
+  });
+
+  updateProgress();
+}
+
+// ---------- Sesión ----------
+async function verificarSesion() {
+  try {
+    const res = await fetch("/api/session");
+    if (!res.ok) throw new Error("no autenticado");
+    const info = await res.json();
+    document.getElementById("userLabel").textContent = `👤 ${info.username}`;
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("appContent").style.display = "block";
+  } catch (err) {
+    window.location.href = "/login.html";
+  }
+}
+
+async function cerrarSesion() {
+  await fetch("/api/logout", { method: "POST" });
+  window.location.href = "/login.html";
+}
+
+// ---------- Registro de historial en el servidor ----------
+async function registrarHistorial(contactName, destino, canal) {
+  try {
+    await fetch("/api/history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contact_name: contactName, contact_destino: destino, canal })
+    });
+  } catch (err) {
+    console.error("No se pudo registrar en el historial:", err);
+  }
+}
+
+// ---------- Panel de historial ----------
+let historialVisible = false;
+let debounceTimer = null;
+
+function toggleHistorial() {
+  historialVisible = !historialVisible;
+  document.getElementById("historyPanel").style.display = historialVisible ? "block" : "none";
+  document.getElementById("btnToggleHist").textContent = historialVisible ? "✖ Ocultar historial" : "📋 Ver historial";
+  if (historialVisible) cargarHistorial();
+}
+
+function debounceHistorial() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(cargarHistorial, 350);
+}
+
+async function cargarHistorial() {
+  const canal = document.getElementById("filtroCanal").value;
+  const q = document.getElementById("filtroBusqueda").value.trim();
+  const params = new URLSearchParams();
+  if (canal) params.set("canal", canal);
+  if (q) params.set("q", q);
+
+  try {
+    const res = await fetch(`/api/history?${params.toString()}`);
+    if (!res.ok) throw new Error("Error al cargar historial");
+    const data = await res.json();
+    const tabla = document.getElementById("historyTable");
+    const cuerpo = document.getElementById("historyBody");
+    const vacio = document.getElementById("historyEmpty");
+
+    if (!data.historial || data.historial.length === 0) {
+      tabla.style.display = "none";
+      vacio.style.display = "block";
+      return;
+    }
+
+    tabla.style.display = "table";
+    vacio.style.display = "none";
+    cuerpo.innerHTML = data.historial.map(row => `
+      <tr>
+        <td>${escapeHtml(row.enviado_at)}</td>
+        <td>${escapeHtml(row.username)}</td>
+        <td>${escapeHtml(row.contact_name)}</td>
+        <td>${escapeHtml(row.contact_destino)}</td>
+        <td><span class="canal-badge ${row.canal}">${row.canal}</span></td>
+      </tr>
+    `).join("");
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+verificarSesion();
+</script>
+</div>
+</body>
+</html>
