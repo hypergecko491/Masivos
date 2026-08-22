@@ -46,6 +46,20 @@ Para ver qué usuarios están registrados (sin mostrar contraseñas):
 npm run users
 ```
 
+Para cambiar la contraseña de alguien (si la olvidó o quieres rotarla):
+
+```bash
+npm run reset-password
+```
+
+Para quitarle el acceso a alguien:
+
+```bash
+npm run delete-user
+```
+Su historial de envíos pasados no se borra, solo deja de poder iniciar
+sesión.
+
 Inicia el servidor:
 
 ```bash

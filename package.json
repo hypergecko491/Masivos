@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "seed": "node seed.js",
-    "users": "node list-users.js"
+    "users": "node list-users.js",
+    "delete-user": "node delete-user.js",
+    "reset-password": "node reset-password.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.3.0",
