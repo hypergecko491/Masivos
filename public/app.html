@@ -84,13 +84,13 @@
   <input type="file" id="excelFile" class="file-hidden" accept=".xlsx,.xls,.csv" onchange="cargarExcel(event)">
   <button class="btn-excel" onclick="document.getElementById('excelFile').click()">Elegir archivo Excel</button>
   <div class="excel-status" id="excelStatus"></div>
-  <p class="hint">Columna A: <b>Nombre</b>. Columna B: <b>Teléfono</b>. Columna C (opcional): <b>Correo</b>. Columna D (opcional): <b>Domicilio</b>. Si la primera fila es encabezado, se detecta y se ignora automáticamente.</p>
+  <p class="hint">Columna A: <b>Nombre</b>. Columna B: <b>Teléfono</b>. Columna C (opcional): <b>Correo</b>. Columna D (opcional): <b>Domicilio</b>. Columnas E y F (opcionales): <b>Referencia 1</b> y <b>Referencia 2</b>. Si la primera fila es encabezado, se detecta y se ignora automáticamente.</p>
 </div>
 
 <div class="editor-box">
-  <label>📇 O pega contactos manualmente (Nombre; Teléfono; Correo; Domicilio — uno por línea)</label>
-  <textarea id="inputContactos" rows="8" placeholder="Ej:&#10;Juan Pérez López; 2221234567; juan.perez@ejemplo.com; Av. Reforma 123, Col. Centro, Puebla&#10;María García Ruiz; 5215512345678; ; Calle 5 de Mayo 45, Cholula"></textarea>
-  <p class="hint">Los campos se separan con <b>punto y coma ( ; )</b> — así el domicilio puede llevar comas sin problema. Correo y domicilio son opcionales: si omites uno, deja el campo vacío entre los dos puntos y coma (como en el segundo ejemplo, sin correo).</p>
+  <label>📇 O pega contactos manualmente (Nombre; Teléfono; Correo; Domicilio; Ref1; Ref2 — uno por línea)</label>
+  <textarea id="inputContactos" rows="8" placeholder="Ej:&#10;Juan Pérez López; 2221234567; juan.perez@ejemplo.com; Av. Reforma 123, Col. Centro, Puebla; María López; Pedro Sánchez&#10;María García Ruiz; 5215512345678; ; Calle 5 de Mayo 45, Cholula; ; Ana Torres"></textarea>
+  <p class="hint">Los campos se separan con <b>punto y coma ( ; )</b> — así el domicilio puede llevar comas sin problema. Correo, domicilio y referencias son opcionales: si omites uno, deja el campo vacío entre los dos puntos y coma (como en el segundo ejemplo, sin correo ni referencia 1).</p>
 </div>
 
 <div class="editor-box">
@@ -111,7 +111,7 @@
 <div class="editor-box">
   <label>💬 Plantilla del mensaje</label>
   <textarea id="inputPlantilla" rows="10" placeholder="Hola {NOMBRE}, te escribimos para..."></textarea>
-  <p class="hint">Usa {NOMBRE} para el nombre y {DIRECCION} para el domicilio de cada persona. Se genera un mensaje por contacto, editable antes de enviarlo.</p>
+  <p class="hint">Usa {NOMBRE} para el nombre, {DIRECCION} para el domicilio, y {REF1} / {REF2} para las referencias de cada persona. Se genera un mensaje por contacto, editable antes de enviarlo.</p>
 </div>
 
 <p class="error" id="errorMsg"></p>
@@ -217,12 +217,14 @@ function cargarExcel(evt) {
         const telRaw = String(row[1] || "").trim();
         const correoRaw = String(row[2] || "").trim();
         const direccionRaw = String(row[3] || "").trim();
+        const ref1Raw = String(row[4] || "").trim();
+        const ref2Raw = String(row[5] || "").trim();
         if (!nombre || !telRaw) { saltados++; return; }
 
         // Detecta fila de encabezado (ej. "Nombre" / "Teléfono", sin dígitos en el teléfono)
         if (idx === 0 && !/\d/.test(telRaw)) { saltados++; return; }
 
-        lineas.push(`${nombre}; ${telRaw}; ${correoRaw}; ${direccionRaw}`);
+        lineas.push(`${nombre}; ${telRaw}; ${correoRaw}; ${direccionRaw}; ${ref1Raw}; ${ref2Raw}`);
       });
 
       if (lineas.length === 0) {
@@ -261,14 +263,16 @@ function generarLista() {
   for (const linea of lineas) {
     const partes = linea.split(";").map(p => p.trim());
     if (partes.length < 2) {
-      errEl.textContent = `⚠️ Esta línea no tiene el formato "Nombre; teléfono; correo; domicilio": "${linea}"`;
+      errEl.textContent = `⚠️ Esta línea no tiene el formato "Nombre; teléfono; correo; domicilio; ref1; ref2": "${linea}"`;
       errEl.style.display = "block";
       return;
     }
     const nombre = partes[0];
     const telRaw = partes[1];
     const correoRaw = partes.length > 2 ? partes[2] : "";
-    const direccionRaw = partes.length > 3 ? partes.slice(3).join(";").trim() : "";
+    const direccionRaw = partes.length > 3 ? partes[3] : "";
+    const ref1Raw = partes.length > 4 ? partes[4] : "";
+    const ref2Raw = partes.length > 5 ? partes.slice(5).join(";").trim() : "";
     const tel = normalizarTelefono(telRaw);
 
     if (!nombre) {
@@ -287,7 +291,7 @@ function generarLista() {
       numsVistos.set(tel, nombre);
     }
 
-    contactos.push({ nombre, telefono: tel, telefonoOriginal: telRaw, correo: correoRaw, direccion: direccionRaw });
+    contactos.push({ nombre, telefono: tel, telefonoOriginal: telRaw, correo: correoRaw, direccion: direccionRaw, ref1: ref1Raw, ref2: ref2Raw });
   }
 
   sentSet.clear();
@@ -298,17 +302,31 @@ function generarLista() {
     valido: telefonoValido(c.telefono),
     correo: c.correo && esEmailValido(c.correo) ? c.correo : "",
     direccion: c.direccion,
-    msg: plantilla.replace(/\{NOMBRE\}/g, c.nombre).replace(/\{DIRECCION\}/g, c.direccion || "")
+    ref1: c.ref1,
+    ref2: c.ref2,
+    msg: plantilla
+      .replace(/\{NOMBRE\}/g, c.nombre)
+      .replace(/\{DIRECCION\}/g, c.direccion || "")
+      .replace(/\{REF1\}/g, c.ref1 || "")
+      .replace(/\{REF2\}/g, c.ref2 || "")
   }));
 
   const invalidos = data.filter(d => !d.valido).length;
   const conCorreo = data.filter(d => d.correo).length;
   const sinDireccion = data.filter(d => !d.direccion).length;
+  const sinRef1 = data.filter(d => !d.ref1).length;
+  const sinRef2 = data.filter(d => !d.ref2).length;
   if (invalidos > 0) {
     avisos.push(`${invalidos} número(s) no parecen válidos (deben quedar entre 10 y 15 dígitos con código de país). Revísalos en las tarjetas marcadas en rojo — el botón "Enviar" estará deshabilitado para esos.`);
   }
   if (plantilla.includes("{DIRECCION}") && sinDireccion > 0) {
     avisos.push(`${sinDireccion} contacto(s) no tienen domicilio — en esos mensajes {DIRECCION} quedará vacío, revísalos antes de enviar.`);
+  }
+  if (plantilla.includes("{REF1}") && sinRef1 > 0) {
+    avisos.push(`${sinRef1} contacto(s) no tienen Referencia 1 — en esos mensajes {REF1} quedará vacío, revísalos antes de enviar.`);
+  }
+  if (plantilla.includes("{REF2}") && sinRef2 > 0) {
+    avisos.push(`${sinRef2} contacto(s) no tienen Referencia 2 — en esos mensajes {REF2} quedará vacío, revísalos antes de enviar.`);
   }
 
   if (avisos.length > 0) {
@@ -500,7 +518,11 @@ function render() {
     const telSafe = escapeHtml(item.telefonoOriginal);
     const correoSafe = escapeHtml(item.correo);
     const direccionSafe = escapeHtml(item.direccion);
+    const ref1Safe = escapeHtml(item.ref1);
+    const ref2Safe = escapeHtml(item.ref2);
     const msgSafe = escapeHtml(item.msg);
+
+    const refs = [item.ref1 ? `Ref1: ${ref1Safe}` : "", item.ref2 ? `Ref2: ${ref2Safe}` : ""].filter(Boolean).join(" · ");
 
     card.innerHTML = `
       <div class="card-head">
@@ -510,6 +532,7 @@ function render() {
           <div class="cphone${item.valido ? "" : " badphone"}">${telSafe}${item.valido ? "" : " — número inválido"}</div>
           ${item.correo ? `<div class="cemail">${correoSafe}</div>` : `<div class="cemail">Sin correo — solo WhatsApp/SMS</div>`}
           ${item.direccion ? `<div class="caddress">📍 ${direccionSafe}</div>` : ""}
+          ${refs ? `<div class="caddress">👥 ${refs}</div>` : ""}
         </div>
       </div>
       <textarea class="msg-edit" oninput="onEdit(${i}, this)" ${isSent ? "disabled" : ""}>${msgSafe}</textarea>
