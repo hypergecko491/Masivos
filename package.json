@@ -1,22 +1,13 @@
 {
-  "name": "envio-mensajes-backend",
+  "name": "envio-mensajes",
   "version": "1.0.0",
   "private": true,
-  "description": "Backend con login y historial para la herramienta de envio de WhatsApp/SMS/Correo",
+  "description": "Herramienta de envio de WhatsApp, SMS y Correo",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "seed": "node seed.js",
-    "users": "node list-users.js",
-    "delete-user": "node delete-user.js",
-    "reset-password": "node reset-password.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "better-sqlite3": "^11.3.0",
-    "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.6",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2"
+    "express": "^4.19.2"
   }
 }

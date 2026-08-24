@@ -9,26 +9,6 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #EEF1F5; min-height: 100vh; padding: 16px; color: #1c2530; }
-  .topbar { display: flex; align-items: center; justify-content: space-between; background: #16233B; color: #fff; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 12.5px; }
-  .topbar .user { font-weight: 600; }
-  .topbar button { background: rgba(255,255,255,0.15); color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; margin-left: 6px; }
-  .topbar button:hover { background: rgba(255,255,255,0.25); }
-  .gate { display: flex; align-items: center; justify-content: center; min-height: 60vh; font-size: 13px; color: #5b6b80; }
-  .app-content { display: none; }
-  .history-panel { background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(22,35,59,0.08); border: 1px solid #e3e8ee; display: none; }
-  .history-panel h2 { font-size: 14px; color: #16233B; margin-bottom: 10px; }
-  .history-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-  .history-filters select, .history-filters input { flex: 1; min-width: 120px; border: 1.5px solid #dde3ea; border-radius: 6px; padding: 8px; font-size: 12.5px; }
-  .history-table-wrap { overflow-x: auto; }
-  table.history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  table.history-table th { text-align: left; color: #5b6b80; font-weight: 700; text-transform: uppercase; font-size: 10.5px; padding: 6px 8px; border-bottom: 2px solid #e3e8ee; white-space: nowrap; }
-  table.history-table td { padding: 7px 8px; border-bottom: 1px solid #eef1f5; white-space: nowrap; }
-  .canal-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10.5px; font-weight: 700; color: #fff; }
-  .canal-badge.whatsapp { background: #1c7c3f; }
-  .canal-badge.sms { background: #2B4C7E; }
-  .canal-badge.correo, .canal-badge.gmail { background: #16233B; }
-  .history-empty { font-size: 12.5px; color: #8b96a3; text-align: center; padding: 14px; }
-  .watermark { position: fixed; bottom: 10px; right: 12px; font-size: 12px; color: #16233B; opacity: 0.7; pointer-events: none; z-index: 999; font-weight: 600; background: rgba(255,255,255,0.6); padding: 3px 8px; border-radius: 6px; }
   h1 { font-size: 18px; color: #16233B; margin-bottom: 4px; text-align: center; letter-spacing: 0.2px; }
   .subtitle { font-size: 13px; color: #5b6b80; text-align: center; margin-bottom: 14px; }
   .editor-box { background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(22,35,59,0.08); border: 1px solid #e3e8ee; }
@@ -80,55 +60,21 @@
   .privacy-box { background: #eef4ff; border: 1px solid #c7d7f5; border-radius: 8px; padding: 10px 12px; font-size: 11.5px; color: #2B4C7E; margin-bottom: 12px; line-height: 1.5; }
   .summary-box { background: #f2f7f4; border: 1px solid #cde3d6; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #1c7c3f; margin-bottom: 10px; display: none; font-weight: 600; text-align: center; }
   .wait-label { background: #fff3e0; border: 1px solid #f0c78a; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; color: #8a5a00; margin-bottom: 10px; display: none; font-weight: 600; text-align: center; }
+  .watermark { position: fixed; bottom: 10px; right: 12px; font-size: 12px; color: #16233B; opacity: 0.7; pointer-events: none; z-index: 999; font-weight: 600; background: rgba(255,255,255,0.6); padding: 3px 8px; border-radius: 6px; }
 </style>
 </head>
 <body>
-
-<div class="gate" id="gate">Verificando sesión...</div>
-
-<div class="app-content" id="appContent">
-
-<div class="topbar">
-  <div class="user" id="userLabel"></div>
-  <div>
-    <button onclick="toggleHistorial()" id="btnToggleHist">📋 Ver historial</button>
-    <button onclick="cerrarSesion()">Cerrar sesión</button>
-  </div>
-</div>
-
-<div class="history-panel" id="historyPanel">
-  <h2>📋 Historial de envíos</h2>
-  <div class="history-filters">
-    <select id="filtroCanal" onchange="cargarHistorial()">
-      <option value="">Todos los canales</option>
-      <option value="whatsapp">WhatsApp</option>
-      <option value="sms">SMS</option>
-      <option value="correo">Correo</option>
-      <option value="gmail">Gmail</option>
-    </select>
-    <input type="text" id="filtroBusqueda" placeholder="Buscar nombre o destino..." oninput="debounceHistorial()">
-  </div>
-  <div class="history-table-wrap">
-    <table class="history-table" id="historyTable" style="display:none;">
-      <thead>
-        <tr><th>Fecha</th><th>Usuario</th><th>Contacto</th><th>Destino</th><th>Canal</th></tr>
-      </thead>
-      <tbody id="historyBody"></tbody>
-    </table>
-    <div class="history-empty" id="historyEmpty">Sin registros todavía.</div>
-  </div>
-</div>
 
 <h1>💬📧 Envío de WhatsApp, SMS y Correo</h1>
 <p class="subtitle">Genera mensajes personalizados y ábrelos uno por uno en cada canal</p>
 
 <div class="privacy-box">
-  🔒 Los contactos y la plantilla se procesan solo en tu navegador. El servidor únicamente guarda el historial de envíos (contacto, destino, canal y fecha) para que quede registro de quién contactó a quién — no guarda el Excel completo ni el contenido de los mensajes.
+  🔒 Este archivo no guarda contactos de una sesión a otra. El Excel se procesa aquí mismo, en tu navegador — no se sube a ningún servidor. Nada queda almacenado si recargas la página.
 </div>
 
 <div class="warn-box">
   ⚠️ Importante: no existe una forma legítima de enviar WhatsApp de forma 100% automática sin dar clic. Esta herramienta abre cada chat con el mensaje ya escrito, pero tú das clic en "Enviar" dentro de WhatsApp para cada contacto. Herramientas que automatizan ese clic violan los Términos de Servicio de WhatsApp y arriesgan que te bloqueen el número — por eso este flujo es manual, uno por uno.<br><br>
-  📱 El botón "SMS" abre tu app de mensajes con el número y texto ya cargados (solo funciona en celular, no en computadora). Los SMS normales dependen de tu plan telefónico y pueden generar costo; los mensajes largos se dividen en varios SMS por el operador.<br><br>
+  📱 En celular, "SMS" abre tu app de mensajes con el número y texto ya cargados. En computadora, no existe una forma oficial de prellenar eso automáticamente — el botón copia el mensaje al portapapeles y abre Google Messages for Web (messages.google.com/web) para que lo pegues en la conversación correcta. La primera vez que la uses, te pedirá vincular tu teléfono escaneando un código QR. Los SMS dependen de tu plan telefónico y pueden generar costo; los mensajes largos se dividen en varios SMS por el operador.<br><br>
   📧 El botón "Correo" abre tu app de correo predeterminada; "Gmail" abre la redacción en Gmail desde el navegador (útil si no tienes app de correo instalada). Ambos requieren el correo del contacto en la columna C del Excel, o como tercer dato al pegar manualmente.<br><br>
   ⏱️ Después de cada envío por WhatsApp, ese botón se bloquea 10 segundos antes de poder enviar el siguiente WhatsApp. Esto evita errores por hacer clic demasiado rápido (ventanas emergentes bloqueadas por el navegador, límites de WhatsApp Web, etc.). SMS, Correo y Gmail no tienen este bloqueo.
 </div>
@@ -412,6 +358,13 @@ function buildSmsUrl(i) {
   return `sms:+${item.telefono}${separador}body=${encodeURIComponent(item.msg)}`;
 }
 
+// En computadora no existe un enlace oficial que abra Google Messages con
+// el número y el texto ya listos (a diferencia de WhatsApp). Lo más cercano:
+// abrir Messages for Web y copiar el mensaje al portapapeles para pegarlo.
+function esEscritorio() {
+  return !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
 function buildMailto(i) {
   const asunto = document.getElementById("asunto").value || "";
   const item = data[i];
@@ -447,7 +400,6 @@ function irAlSiguiente(iActual) {
 function enviarWhatsapp(i) {
   if (!data[i].valido || enEsperaDeEnvio()) return;
   window.open(buildWaUrl(i), "_blank");
-  registrarHistorial(data[i].nombre, data[i].telefono, "whatsapp");
   setTimeout(() => {
     sentSet.add(i);
     irAlSiguiente(i);
@@ -457,8 +409,29 @@ function enviarWhatsapp(i) {
 
 function enviarSms(i) {
   if (!data[i].valido) return;
+
+  if (esEscritorio()) {
+    // En computadora: copiamos el mensaje y abrimos Google Messages for Web.
+    // La primera vez pedirá vincular tu teléfono con un código QR.
+    navigator.clipboard.writeText(data[i].msg).then(() => {
+      const btn = document.getElementById(`smsbtn-${i}`);
+      if (btn) {
+        const old = btn.textContent;
+        btn.textContent = "Copiado ✓";
+        setTimeout(() => { btn.textContent = old; }, 1800);
+      }
+    });
+    window.open("https://messages.google.com/web/", "_blank");
+    setTimeout(() => {
+      sentSet.add(i);
+      render();
+      irAlSiguiente(i);
+    }, 1200);
+    return;
+  }
+
+  // En celular: el enlace sms: abre la app de mensajes con todo prellenado.
   abrirEnlace(buildSmsUrl(i));
-  registrarHistorial(data[i].nombre, data[i].telefono, "sms");
   setTimeout(() => {
     sentSet.add(i);
     render();
@@ -469,7 +442,6 @@ function enviarSms(i) {
 function enviarCorreo(i) {
   if (!data[i].correo) return;
   abrirEnlace(buildMailto(i));
-  registrarHistorial(data[i].nombre, data[i].correo, "correo");
   setTimeout(() => {
     sentSet.add(i);
     render();
@@ -480,7 +452,6 @@ function enviarCorreo(i) {
 function abrirGmail(i) {
   if (!data[i].correo) return;
   window.open(buildGmailUrl(i), "_blank");
-  registrarHistorial(data[i].nombre, data[i].correo, "gmail");
   setTimeout(() => {
     sentSet.add(i);
     render();
@@ -547,7 +518,7 @@ function render() {
         ${isSent
           ? `<button class="btn-sent" onclick="undoSent(${i})">Deshacer</button>`
           : `<button class="btn-send" onclick="enviarWhatsapp(${i})" ${(item.valido && !enEspera) ? "" : "disabled"}>WhatsApp</button>
-             <button class="btn-sms" onclick="enviarSms(${i})" ${item.valido ? "" : "disabled"}>SMS</button>
+             <button class="btn-sms" id="smsbtn-${i}" onclick="enviarSms(${i})" ${item.valido ? "" : "disabled"}>SMS</button>
              <button class="btn-correo" onclick="enviarCorreo(${i})" ${item.correo ? "" : "disabled"}>Correo</button>
              <button class="btn-gmail" onclick="abrirGmail(${i})" ${item.correo ? "" : "disabled"}>Gmail</button>
              <button class="btn-copy" id="copybtn-${i}" onclick="copiarMensaje(${i})">Copiar</button>`
@@ -560,95 +531,7 @@ function render() {
 
   updateProgress();
 }
-
-// ---------- Sesión ----------
-async function verificarSesion() {
-  try {
-    const res = await fetch("/api/session");
-    if (!res.ok) throw new Error("no autenticado");
-    const info = await res.json();
-    document.getElementById("userLabel").textContent = `👤 ${info.username}`;
-    document.getElementById("gate").style.display = "none";
-    document.getElementById("appContent").style.display = "block";
-  } catch (err) {
-    window.location.href = "/login.html";
-  }
-}
-
-async function cerrarSesion() {
-  await fetch("/api/logout", { method: "POST" });
-  window.location.href = "/login.html";
-}
-
-// ---------- Registro de historial en el servidor ----------
-async function registrarHistorial(contactName, destino, canal) {
-  try {
-    await fetch("/api/history", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contact_name: contactName, contact_destino: destino, canal })
-    });
-  } catch (err) {
-    console.error("No se pudo registrar en el historial:", err);
-  }
-}
-
-// ---------- Panel de historial ----------
-let historialVisible = false;
-let debounceTimer = null;
-
-function toggleHistorial() {
-  historialVisible = !historialVisible;
-  document.getElementById("historyPanel").style.display = historialVisible ? "block" : "none";
-  document.getElementById("btnToggleHist").textContent = historialVisible ? "✖ Ocultar historial" : "📋 Ver historial";
-  if (historialVisible) cargarHistorial();
-}
-
-function debounceHistorial() {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(cargarHistorial, 350);
-}
-
-async function cargarHistorial() {
-  const canal = document.getElementById("filtroCanal").value;
-  const q = document.getElementById("filtroBusqueda").value.trim();
-  const params = new URLSearchParams();
-  if (canal) params.set("canal", canal);
-  if (q) params.set("q", q);
-
-  try {
-    const res = await fetch(`/api/history?${params.toString()}`);
-    if (!res.ok) throw new Error("Error al cargar historial");
-    const data = await res.json();
-    const tabla = document.getElementById("historyTable");
-    const cuerpo = document.getElementById("historyBody");
-    const vacio = document.getElementById("historyEmpty");
-
-    if (!data.historial || data.historial.length === 0) {
-      tabla.style.display = "none";
-      vacio.style.display = "block";
-      return;
-    }
-
-    tabla.style.display = "table";
-    vacio.style.display = "none";
-    cuerpo.innerHTML = data.historial.map(row => `
-      <tr>
-        <td>${escapeHtml(row.enviado_at)}</td>
-        <td>${escapeHtml(row.username)}</td>
-        <td>${escapeHtml(row.contact_name)}</td>
-        <td>${escapeHtml(row.contact_destino)}</td>
-        <td><span class="canal-badge ${row.canal}">${row.canal}</span></td>
-      </tr>
-    `).join("");
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-verificarSesion();
 </script>
-</div>
 
 <div class="watermark">@hypergecko491</div>
 
