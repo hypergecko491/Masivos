@@ -61,6 +61,12 @@
   .summary-box { background: #f2f7f4; border: 1px solid #cde3d6; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #1c7c3f; margin-bottom: 10px; display: none; font-weight: 600; text-align: center; }
   .wait-label { background: #fff3e0; border: 1px solid #f0c78a; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; color: #8a5a00; margin-bottom: 10px; display: none; font-weight: 600; text-align: center; }
   .watermark { position: fixed; bottom: 10px; right: 12px; font-size: 12px; color: #16233B; opacity: 0.7; pointer-events: none; z-index: 999; font-weight: 600; background: rgba(255,255,255,0.6); padding: 3px 8px; border-radius: 6px; }
+  .variant-block { position: relative; margin-bottom: 12px; }
+  .variant-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .variant-label span { font-size: 11px; font-weight: 700; color: #2B4C7E; text-transform: uppercase; letter-spacing: 0.5px; }
+  .btn-variant-remove { background: none; border: none; color: #b3261e; font-size: 12px; font-weight: 700; cursor: pointer; padding: 2px 6px; }
+  .btn-variant-add { background: #eef1f5; color: #2B4C7E; border: 1px dashed #b8c4d6; border-radius: 6px; padding: 8px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px; }
+  .btn-variant-add:hover { background: #e3e8ee; }
 </style>
 </head>
 <body>
@@ -74,7 +80,7 @@
 
 <div class="warn-box">
   ⚠️ Importante: no existe una forma legítima de enviar WhatsApp de forma 100% automática sin dar clic. Esta herramienta abre cada chat con el mensaje ya escrito, pero tú das clic en "Enviar" dentro de WhatsApp para cada contacto. Herramientas que automatizan ese clic violan los Términos de Servicio de WhatsApp y arriesgan que te bloqueen el número — por eso este flujo es manual, uno por uno.<br><br>
-  📱 En celular, "SMS" abre tu app de mensajes con el número y texto ya cargados. En computadora, no existe una forma oficial de prellenar eso automáticamente — el botón copia el mensaje al portapapeles y abre Google Messages for Web (messages.google.com/web) para que lo pegues en la conversación correcta. La primera vez que la uses, te pedirá vincular tu teléfono escaneando un código QR. Los SMS dependen de tu plan telefónico y pueden generar costo; los mensajes largos se dividen en varios SMS por el operador.<br><br>
+  📱 En celular, "SMS" abre tu app de mensajes con el número y texto ya cargados. En computadora, Google no permite abrir el chat de un contacto específico desde un enlace — el botón copia el mensaje al portapapeles, abre Google Messages for Web, y te muestra un aviso recordándote a quién buscar; ahí abres tú esa conversación y pegas (Ctrl+V). La primera vez que uses Messages for Web, te pedirá vincular tu teléfono escaneando un código QR. Los SMS dependen de tu plan telefónico y pueden generar costo; los mensajes largos se dividen en varios SMS por el operador.<br><br>
   📧 El botón "Correo" abre tu app de correo predeterminada; "Gmail" abre la redacción en Gmail desde el navegador (útil si no tienes app de correo instalada). Ambos requieren el correo del contacto en la columna C del Excel, o como tercer dato al pegar manualmente.<br><br>
   ⏱️ Después de cada envío por WhatsApp, ese botón se bloquea 10 segundos antes de poder enviar el siguiente WhatsApp. Esto evita errores por hacer clic demasiado rápido (ventanas emergentes bloqueadas por el navegador, límites de WhatsApp Web, etc.). SMS, Correo y Gmail no tienen este bloqueo.
 </div>
@@ -84,13 +90,13 @@
   <input type="file" id="excelFile" class="file-hidden" accept=".xlsx,.xls,.csv" onchange="cargarExcel(event)">
   <button class="btn-excel" onclick="document.getElementById('excelFile').click()">Elegir archivo Excel</button>
   <div class="excel-status" id="excelStatus"></div>
-  <p class="hint">Columna A: <b>Nombre</b>. Columna B: <b>Teléfono</b>. Columna C (opcional): <b>Correo</b>. Columna D (opcional): <b>Domicilio</b>. Columnas E y F (opcionales): <b>Referencia 1</b> y <b>Referencia 2</b>. Si la primera fila es encabezado, se detecta y se ignora automáticamente.</p>
+  <p class="hint">Columna A: <b>Nombre</b>. Columna B: <b>Teléfono</b>. Columna C (opcional): <b>Correo</b>. Columna D (opcional): <b>Domicilio</b>. Columnas E y F (opcionales): <b>Referencia 1</b> y <b>Referencia 2</b>. Columna G (opcional): escribe <b>"no"</b> si ese contacto NO tiene WhatsApp — deja vacío o "si" si sí tiene. Si la primera fila es encabezado, se detecta y se ignora automáticamente.</p>
 </div>
 
 <div class="editor-box">
-  <label>📇 O pega contactos manualmente (Nombre; Teléfono; Correo; Domicilio; Ref1; Ref2 — uno por línea)</label>
-  <textarea id="inputContactos" rows="8" placeholder="Ej:&#10;Juan Pérez López; 2221234567; juan.perez@ejemplo.com; Av. Reforma 123, Col. Centro, Puebla; María López; Pedro Sánchez&#10;María García Ruiz; 5215512345678; ; Calle 5 de Mayo 45, Cholula; ; Ana Torres"></textarea>
-  <p class="hint">Los campos se separan con <b>punto y coma ( ; )</b> — así el domicilio puede llevar comas sin problema. Correo, domicilio y referencias son opcionales: si omites uno, deja el campo vacío entre los dos puntos y coma (como en el segundo ejemplo, sin correo ni referencia 1).</p>
+  <label>📇 O pega contactos manualmente (Nombre; Teléfono; Correo; Domicilio; Ref1; Ref2; TieneWhatsApp — uno por línea)</label>
+  <textarea id="inputContactos" rows="8" placeholder="Ej:&#10;Juan Pérez López; 2221234567; juan.perez@ejemplo.com; Av. Reforma 123, Col. Centro, Puebla; María López; Pedro Sánchez; si&#10;María García Ruiz; 5215512345678; ; Calle 5 de Mayo 45, Cholula; ; Ana Torres; no"></textarea>
+  <p class="hint">Los campos se separan con <b>punto y coma ( ; )</b> — así el domicilio puede llevar comas sin problema. Todos menos Nombre y Teléfono son opcionales: deja el campo vacío entre los dos puntos y coma si no aplica. En el último campo, escribe "no" solo si sabes que ese contacto no tiene WhatsApp — así se desactiva ese botón para él.</p>
 </div>
 
 <div class="editor-box">
@@ -109,9 +115,10 @@
 </div>
 
 <div class="editor-box">
-  <label>💬 Plantilla del mensaje</label>
-  <textarea id="inputPlantilla" rows="10" placeholder="Hola {NOMBRE}, te escribimos para..."></textarea>
-  <p class="hint">Usa {NOMBRE} para el nombre, {DIRECCION} para el domicilio, y {REF1} / {REF2} para las referencias de cada persona. Se genera un mensaje por contacto, editable antes de enviarlo.</p>
+  <label>💬 Plantillas del mensaje (variantes)</label>
+  <div id="plantillasContainer"></div>
+  <button type="button" class="btn-variant-add" onclick="agregarVariante()">+ Agregar variante</button>
+  <p class="hint">Usa {NOMBRE}, {DIRECCION}, {REF1} y {REF2} igual que antes. Si agregas más de una variante, cada contacto recibe una al azar — así no se manda el mismo texto exacto a todos, lo que ayuda a que WhatsApp no lo detecte como spam masivo.</p>
 </div>
 
 <p class="error" id="errorMsg"></p>
@@ -134,6 +141,43 @@ let data = [];
 const sentSet = new Set(); // en memoria, se reinicia al recargar
 let waitUntil = 0;      // timestamp (ms) hasta el cual los botones de envío están bloqueados
 let waitInterval = null;
+let variantCounter = 0;
+
+// ---------- Variantes de plantilla ----------
+function agregarVariante(valorInicial) {
+  variantCounter++;
+  const id = variantCounter;
+  const contenedor = document.getElementById("plantillasContainer");
+
+  const bloque = document.createElement("div");
+  bloque.className = "variant-block";
+  bloque.id = `variante-${id}`;
+  bloque.innerHTML = `
+    <div class="variant-label">
+      <span>Variante ${id}</span>
+      <button type="button" class="btn-variant-remove" onclick="quitarVariante(${id})">✕ Quitar</button>
+    </div>
+    <textarea id="plantilla-${id}" rows="8" placeholder="Hola {NOMBRE}, te escribimos para...">${valorInicial ? escapeHtml(valorInicial) : ""}</textarea>
+  `;
+  contenedor.appendChild(bloque);
+}
+
+function quitarVariante(id) {
+  const bloque = document.getElementById(`variante-${id}`);
+  const contenedor = document.getElementById("plantillasContainer");
+  if (bloque && contenedor.children.length > 1) {
+    bloque.remove();
+  }
+}
+
+function obtenerPlantillas() {
+  const contenedor = document.getElementById("plantillasContainer");
+  const textareas = contenedor.querySelectorAll("textarea");
+  return Array.from(textareas).map(t => t.value).filter(v => v.trim().length > 0);
+}
+
+// Crea la primera variante al cargar la página
+agregarVariante();
 
 function enEsperaDeEnvio() {
   return Date.now() < waitUntil;
@@ -219,12 +263,13 @@ function cargarExcel(evt) {
         const direccionRaw = String(row[3] || "").trim();
         const ref1Raw = String(row[4] || "").trim();
         const ref2Raw = String(row[5] || "").trim();
+        const tieneWaRaw = String(row[6] || "").trim();
         if (!nombre || !telRaw) { saltados++; return; }
 
         // Detecta fila de encabezado (ej. "Nombre" / "Teléfono", sin dígitos en el teléfono)
         if (idx === 0 && !/\d/.test(telRaw)) { saltados++; return; }
 
-        lineas.push(`${nombre}; ${telRaw}; ${correoRaw}; ${direccionRaw}; ${ref1Raw}; ${ref2Raw}`);
+        lineas.push(`${nombre}; ${telRaw}; ${correoRaw}; ${direccionRaw}; ${ref1Raw}; ${ref2Raw}; ${tieneWaRaw}`);
       });
 
       if (lineas.length === 0) {
@@ -248,10 +293,10 @@ function generarLista() {
 
   const lineas = document.getElementById("inputContactos").value
     .split("\n").map(l => l.trim()).filter(l => l.length > 0);
-  const plantilla = document.getElementById("inputPlantilla").value;
+  const plantillas = obtenerPlantillas();
 
-  if (lineas.length === 0 || plantilla.trim().length === 0) {
-    errEl.textContent = "⚠️ Debes cargar/pegar contactos y una plantilla de mensaje.";
+  if (lineas.length === 0 || plantillas.length === 0) {
+    errEl.textContent = "⚠️ Debes cargar/pegar contactos y al menos una plantilla de mensaje.";
     errEl.style.display = "block";
     return;
   }
@@ -263,7 +308,7 @@ function generarLista() {
   for (const linea of lineas) {
     const partes = linea.split(";").map(p => p.trim());
     if (partes.length < 2) {
-      errEl.textContent = `⚠️ Esta línea no tiene el formato "Nombre; teléfono; correo; domicilio; ref1; ref2": "${linea}"`;
+      errEl.textContent = `⚠️ Esta línea no tiene el formato "Nombre; teléfono; correo; domicilio; ref1; ref2; tieneWhatsApp": "${linea}"`;
       errEl.style.display = "block";
       return;
     }
@@ -272,7 +317,8 @@ function generarLista() {
     const correoRaw = partes.length > 2 ? partes[2] : "";
     const direccionRaw = partes.length > 3 ? partes[3] : "";
     const ref1Raw = partes.length > 4 ? partes[4] : "";
-    const ref2Raw = partes.length > 5 ? partes.slice(5).join(";").trim() : "";
+    const ref2Raw = partes.length > 5 ? partes[5] : "";
+    const tieneWaRaw = partes.length > 6 ? partes.slice(6).join(";").trim() : "";
     const tel = normalizarTelefono(telRaw);
 
     if (!nombre) {
@@ -291,42 +337,58 @@ function generarLista() {
       numsVistos.set(tel, nombre);
     }
 
-    contactos.push({ nombre, telefono: tel, telefonoOriginal: telRaw, correo: correoRaw, direccion: direccionRaw, ref1: ref1Raw, ref2: ref2Raw });
+    // Solo "no"/"n"/"false"/"0" desactivan WhatsApp; vacío o cualquier otra cosa asume que sí tiene
+    const tieneWhatsapp = !["no", "n", "false", "0"].includes(tieneWaRaw.toLowerCase());
+
+    contactos.push({ nombre, telefono: tel, telefonoOriginal: telRaw, correo: correoRaw, direccion: direccionRaw, ref1: ref1Raw, ref2: ref2Raw, tieneWhatsapp });
   }
 
   sentSet.clear();
-  data = contactos.map(c => ({
-    nombre: c.nombre,
-    telefono: c.telefono,
-    telefonoOriginal: c.telefonoOriginal,
-    valido: telefonoValido(c.telefono),
-    correo: c.correo && esEmailValido(c.correo) ? c.correo : "",
-    direccion: c.direccion,
-    ref1: c.ref1,
-    ref2: c.ref2,
-    msg: plantilla
-      .replace(/\{NOMBRE\}/g, c.nombre)
-      .replace(/\{DIRECCION\}/g, c.direccion || "")
-      .replace(/\{REF1\}/g, c.ref1 || "")
-      .replace(/\{REF2\}/g, c.ref2 || "")
-  }));
+  data = contactos.map(c => {
+    const plantillaElegida = plantillas[Math.floor(Math.random() * plantillas.length)];
+    return {
+      nombre: c.nombre,
+      telefono: c.telefono,
+      telefonoOriginal: c.telefonoOriginal,
+      valido: telefonoValido(c.telefono),
+      correo: c.correo && esEmailValido(c.correo) ? c.correo : "",
+      direccion: c.direccion,
+      ref1: c.ref1,
+      ref2: c.ref2,
+      tieneWhatsapp: c.tieneWhatsapp,
+      msg: plantillaElegida
+        .replace(/\{NOMBRE\}/g, c.nombre)
+        .replace(/\{DIRECCION\}/g, c.direccion || "")
+        .replace(/\{REF1\}/g, c.ref1 || "")
+        .replace(/\{REF2\}/g, c.ref2 || "")
+    };
+  });
+
+  const usaPlaceholder = (marca) => plantillas.some(p => p.includes(marca));
 
   const invalidos = data.filter(d => !d.valido).length;
   const conCorreo = data.filter(d => d.correo).length;
   const sinDireccion = data.filter(d => !d.direccion).length;
   const sinRef1 = data.filter(d => !d.ref1).length;
   const sinRef2 = data.filter(d => !d.ref2).length;
+  const sinWhatsapp = data.filter(d => !d.tieneWhatsapp).length;
   if (invalidos > 0) {
     avisos.push(`${invalidos} número(s) no parecen válidos (deben quedar entre 10 y 15 dígitos con código de país). Revísalos en las tarjetas marcadas en rojo — el botón "Enviar" estará deshabilitado para esos.`);
   }
-  if (plantilla.includes("{DIRECCION}") && sinDireccion > 0) {
+  if (usaPlaceholder("{DIRECCION}") && sinDireccion > 0) {
     avisos.push(`${sinDireccion} contacto(s) no tienen domicilio — en esos mensajes {DIRECCION} quedará vacío, revísalos antes de enviar.`);
   }
-  if (plantilla.includes("{REF1}") && sinRef1 > 0) {
+  if (usaPlaceholder("{REF1}") && sinRef1 > 0) {
     avisos.push(`${sinRef1} contacto(s) no tienen Referencia 1 — en esos mensajes {REF1} quedará vacío, revísalos antes de enviar.`);
   }
-  if (plantilla.includes("{REF2}") && sinRef2 > 0) {
+  if (usaPlaceholder("{REF2}") && sinRef2 > 0) {
     avisos.push(`${sinRef2} contacto(s) no tienen Referencia 2 — en esos mensajes {REF2} quedará vacío, revísalos antes de enviar.`);
+  }
+  if (sinWhatsapp > 0) {
+    avisos.push(`${sinWhatsapp} contacto(s) marcados sin WhatsApp — ese botón queda desactivado para ellos, usa SMS/Correo en su lugar.`);
+  }
+  if (plantillas.length > 1) {
+    avisos.push(`Se usaron ${plantillas.length} variantes de plantilla, elegidas al azar entre los contactos.`);
   }
 
   if (avisos.length > 0) {
@@ -416,7 +478,7 @@ function irAlSiguiente(iActual) {
 }
 
 function enviarWhatsapp(i) {
-  if (!data[i].valido || enEsperaDeEnvio()) return;
+  if (!data[i].valido || !data[i].tieneWhatsapp || enEsperaDeEnvio()) return;
   window.open(buildWaUrl(i), "_blank");
   setTimeout(() => {
     sentSet.add(i);
@@ -429,9 +491,8 @@ function enviarSms(i) {
   if (!data[i].valido) return;
 
   if (esEscritorio()) {
-    // En computadora: copiamos el mensaje y abrimos Google Messages for Web.
-    // La primera vez pedirá vincular tu teléfono con un código QR.
-    navigator.clipboard.writeText(data[i].msg).then(() => {
+    const item = data[i];
+    navigator.clipboard.writeText(item.msg).then(() => {
       const btn = document.getElementById(`smsbtn-${i}`);
       if (btn) {
         const old = btn.textContent;
@@ -439,7 +500,18 @@ function enviarSms(i) {
         setTimeout(() => { btn.textContent = old; }, 1800);
       }
     });
-    window.open("https://messages.google.com/web/", "_blank");
+    window.open("https://messages.google.com/web/conversations", "_blank");
+    // Importante: Google no permite abrir el chat de un contacto específico
+    // desde una URL — solo abre la página general de Messages for Web.
+    // Por eso avisamos aquí a quién buscar, ya que el portapapeles solo
+    // lleva el mensaje, no el número.
+    alert(
+      `Mensaje copiado ✓\n\n` +
+      `Google Messages no permite abrir el chat de un contacto directo desde un enlace.\n\n` +
+      `1) Busca a "${item.nombre}" o el número ${item.telefonoOriginal} en la barra de búsqueda de Messages.\n` +
+      `2) Abre esa conversación.\n` +
+      `3) Pega el mensaje (Ctrl+V) y envíalo tú mismo.`
+    );
     setTimeout(() => {
       sentSet.add(i);
       render();
@@ -533,6 +605,7 @@ function render() {
           ${item.correo ? `<div class="cemail">${correoSafe}</div>` : `<div class="cemail">Sin correo — solo WhatsApp/SMS</div>`}
           ${item.direccion ? `<div class="caddress">📍 ${direccionSafe}</div>` : ""}
           ${refs ? `<div class="caddress">👥 ${refs}</div>` : ""}
+          ${!item.tieneWhatsapp ? `<div class="cphone badphone">🚫 Sin WhatsApp (marcado manualmente)</div>` : ""}
         </div>
       </div>
       <textarea class="msg-edit" oninput="onEdit(${i}, this)" ${isSent ? "disabled" : ""}>${msgSafe}</textarea>
@@ -540,7 +613,7 @@ function render() {
       <div class="card-actions">
         ${isSent
           ? `<button class="btn-sent" onclick="undoSent(${i})">Deshacer</button>`
-          : `<button class="btn-send" onclick="enviarWhatsapp(${i})" ${(item.valido && !enEspera) ? "" : "disabled"}>WhatsApp</button>
+          : `<button class="btn-send" onclick="enviarWhatsapp(${i})" ${(item.valido && item.tieneWhatsapp && !enEspera) ? "" : "disabled"}>WhatsApp</button>
              <button class="btn-sms" id="smsbtn-${i}" onclick="enviarSms(${i})" ${item.valido ? "" : "disabled"}>SMS</button>
              <button class="btn-correo" onclick="enviarCorreo(${i})" ${item.correo ? "" : "disabled"}>Correo</button>
              <button class="btn-gmail" onclick="abrirGmail(${i})" ${item.correo ? "" : "disabled"}>Gmail</button>
