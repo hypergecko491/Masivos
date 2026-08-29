@@ -8,7 +8,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --bg: #EEF1F5;
     --text: #1c2530;
@@ -37,7 +36,6 @@
     --watermark-bg: rgba(255,255,255,0.6);
     --variant-add-border: #b8c4d6;
   }
-
   body.dark {
     --bg: #10141c;
     --text: #d7dee8;
@@ -66,7 +64,6 @@
     --watermark-bg: rgba(27,33,48,0.7);
     --variant-add-border: #3a4459;
   }
-
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); min-height: 100vh; padding: 16px; color: var(--text); transition: background 0.2s, color 0.2s; }
   .top-controls { display: flex; justify-content: flex-end; margin-bottom: 6px; }
   .theme-toggle { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text); border-radius: 20px; padding: 6px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
@@ -135,26 +132,21 @@
 </style>
 </head>
 <body>
-
 <div class="top-controls">
   <button class="theme-toggle" id="themeToggle" onclick="alternarTema()">🌙 Modo oscuro</button>
 </div>
-
 <h1>💬📧 Mensajería</h1>
 <p class="subtitle">Genera mensajes personalizados y ábrelos uno por uno en cada canal
 Desarrollado por @hypergecko491</p>
-
 <div class="privacy-box">
   🔒 Este archivo no guarda contactos de una sesión a otra. El Excel se procesa aquí mismo, en tu navegador — no se sube a ningún servidor. Nada queda almacenado si recargas la página.
 </div>
-
 <div class="warn-box">
   ⚠️ Importante: Esta herramienta abre cada chat con el mensaje ya escrito, pero tú das clic en "Enviar" dentro de WhatsApp para cada contacto.<br><br>
   📱 En celular, "SMS" abre tu app de mensajes con el número y texto ya cargados. En computadora, Google no permite abrir el chat de un contacto específico desde un enlace — el botón copia el mensaje al portapapeles, abre Google Messages for Web, y te muestra un aviso recordándote a quién buscar; ahí abres tú esa conversación y pegas (Ctrl+V). La primera vez que uses Messages for Web, te pedirá vincular tu teléfono escaneando un código QR. Los SMS dependen de tu plan telefónico y pueden generar costo; los mensajes largos se dividen en varios SMS por el operador.<br><br>
   📧 El botón "Outlook" abre la redacción en Outlook desde el navegador (outlook.live.com), ya con destinatario, asunto y mensaje listos; "Gmail" hace lo mismo con Gmail. Ambos requieren el correo del contacto en la columna C del Excel, o como tercer dato al pegar manualmente. Necesitas tener sesión iniciada en la cuenta correspondiente (la tuya, para enviar) en ese navegador.<br><br>
   ⏱️ Después de cada envío por WhatsApp, ese botón se bloquea entre 8 y 12 segundos (al azar, no siempre el mismo tiempo) antes de poder enviar el siguiente. Esto ayuda a que el ritmo de envío se vea menos repetitivo/aCorreo yutomático y reduce el riesgo de bloqueo por parte de WhatsApp. SMS,  Gmail no tienen este bloqueo.
 </div>
-
 <div class="editor-box">
   <label>📊 Cargar contactos desde Excel</label>
   <input type="file" id="excelFile" class="file-hidden" accept=".xlsx,.xls,.csv" onchange="cargarExcel(event)">
@@ -162,18 +154,15 @@ Desarrollado por @hypergecko491</p>
   <div class="excel-status" id="excelStatus"></div>
   <p class="hint">Columna A: <b>Nombre</b>. Columna B: <b>Teléfono</b>. Columna C (opcional): <b>Correo</b>. Columna D (opcional): <b>Domicilio</b>. Columnas E y F (opcionales): <b>Referencia 1</b> y <b>Referencia 2</b>. Columna G (opcional): <b>Saldo</b>. Columnas H e I (opcionales): <b>Latitud</b> y <b>Longitud</b>. Si la primera fila es encabezado, se detecta y se ignora automáticamente.</p>
 </div>
-
 <div class="editor-box">
   <label>📇 O pega contactos manualmente (Nombre; Teléfono; Correo; Domicilio; Ref1; Ref2; Saldo; Latitud; Longitud — uno por línea)</label>
   <textarea id="inputContactos" rows="8" placeholder="Ej:&#10;Juan Pérez López; 2221234567; juan.perez@ejemplo.com; Av. Reforma 123, Col. Centro, Puebla; María López; Pedro Sánchez; 1500; 19.0414; -98.2063&#10;María García Ruiz; 5215512345678; ; Calle 5 de Mayo 45, Cholula; ; Ana Torres; 850; ; "></textarea>
   <p class="hint">Los campos se separan con <b>punto y coma ( ; )</b> — así el domicilio puede llevar comas sin problema. Todos menos Nombre y Teléfono son opcionales: deja el campo vacío entre los dos puntos y coma si no aplica. Latitud y longitud se usan para armar un enlace de ubicación en Google Maps (si dejas alguna vacía, no se genera el enlace para ese contacto).</p>
 </div>
-
 <div class="editor-box">
   <label>Asunto del correo (aplica a todos)</label>
   <input type="text" id="asunto" value="Aviso">
 </div>
-
 <div class="editor-box">
   <div class="row2">
     <div>
@@ -183,29 +172,23 @@ Desarrollado por @hypergecko491</p>
     </div>
   </div>
 </div>
-
 <div class="editor-box">
   <label>💬 Plantillas del mensaje (variantes)</label>
   <div id="plantillasContainer"></div>
   <button type="button" class="btn-variant-add" onclick="agregarVariante()">+ Agregar variante</button>
   <p class="hint">Usa {NOMBRE}, {DIRECCION}, {REF1}, {REF2}, {SALDO} y {UBICACION}(enlaza a Google Maps si cargaste latitud/longitud). Si agregas más de una variante, cada contacto recibe una al azar — así no se manda el mismo texto exacto a todos, lo que ayuda a que WhatsApp no lo detecte como spam masivo.</p>
 </div>
-
 <p class="error" id="errorMsg"></p>
 <button class="btn-parse" onclick="generarLista()">✅ Generar lista de mensajes</button>
-
 <div id="sendSection">
   <br>
   <div class="summary-box" id="summaryBox"></div>
   <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
   <div class="progress-label" id="progressLabel"></div>
   <div class="wait-label" id="waitLabel"></div>
-
   <div id="list"></div>
-
   <p class="note">"WhatsApp" abre el chat con el mensaje ya escrito, en PC, Android o iPhone. "SMS" abre tu app de mensajes (solo celular). "Outlook" y "Gmail" abren la redacción en el navegador, ya con todo listo. En todos los casos, tú das el clic final de "Enviar" dentro de cada app. "Copiar" pega el texto para pegarlo donde quieras.<br><br>El progreso se guarda solo mientras esta pestaña está abierta; si recargas la página se reinicia.</p>
 </div>
-
 <script>
 // ---------- Modo claro / oscuro ----------
 function aplicarTema(esOscuro) {
@@ -229,13 +212,11 @@ function alternarTema() {
     aplicarTema(true); // sin preferencia guardada: respeta el modo del sistema
   }
 })();
-
 let data = [];
 const sentSet = new Set(); // en memoria, se reinicia al recargar
 let waitUntil = 0;      // timestamp (ms) hasta el cual los botones de envío están bloqueados
 let waitInterval = null;
 let variantCounter = 0;
-
 // ---------- Variantes de plantilla ----------
 function agregarVariante(valorInicial) {
   variantCounter++;
@@ -254,7 +235,6 @@ function agregarVariante(valorInicial) {
   `;
   contenedor.appendChild(bloque);
 }
-
 function quitarVariante(id) {
   const bloque = document.getElementById(`variante-${id}`);
   const contenedor = document.getElementById("plantillasContainer");
@@ -262,20 +242,16 @@ function quitarVariante(id) {
     bloque.remove();
   }
 }
-
 function obtenerPlantillas() {
   const contenedor = document.getElementById("plantillasContainer");
   const textareas = contenedor.querySelectorAll("textarea");
   return Array.from(textareas).map(t => t.value).filter(v => v.trim().length > 0);
 }
-
 // Crea la primera variante al cargar la página
 agregarVariante();
-
 function enEsperaDeEnvio() {
   return Date.now() < waitUntil;
 }
-
 function iniciarEsperaEnvio() {
   const delayMs = 8000 + Math.floor(Math.random() * 4001); // entre 8000 y 12000 ms, al azar
   waitUntil = Date.now() + delayMs;
@@ -293,7 +269,6 @@ function iniciarEsperaEnvio() {
     }
   }, 250);
 }
-
 function actualizarEtiquetaEspera() {
   const el = document.getElementById("waitLabel");
   if (!el) return;
@@ -305,13 +280,11 @@ function actualizarEtiquetaEspera() {
     el.style.display = "none";
   }
 }
-
 function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
 }
-
 // Limpia un número: deja solo dígitos, quita 00/+ inicial, agrega código de país si hace falta
 function normalizarTelefono(raw) {
   let digits = String(raw).replace(/\D/g, "");
@@ -322,33 +295,26 @@ function normalizarTelefono(raw) {
   }
   return digits;
 }
-
 function telefonoValido(digits) {
   return /^\d{10,15}$/.test(digits);
 }
-
 function esEmailValido(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
-
 // ---------- Carga desde Excel ----------
 function cargarExcel(evt) {
   const file = evt.target.files[0];
   const statusEl = document.getElementById("excelStatus");
   if (!file) return;
-
   statusEl.textContent = "Leyendo archivo...";
-
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
       const wb = XLSX.read(e.target.result, { type: "array" });
       const sheet = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
-
       const lineas = [];
       let saltados = 0;
-
       rows.forEach((row, idx) => {
         if (!row || row.length < 2) { saltados++; return; }
         const nombre = String(row[0] || "").trim();
@@ -361,18 +327,14 @@ function cargarExcel(evt) {
         const latRaw = String(row[7] || "").trim();
         const lngRaw = String(row[8] || "").trim();
         if (!nombre || !telRaw) { saltados++; return; }
-
         // Detecta fila de encabezado (ej. "Nombre" / "Teléfono", sin dígitos en el teléfono)
         if (idx === 0 && !/\d/.test(telRaw)) { saltados++; return; }
-
         lineas.push(`${nombre}; ${telRaw}; ${correoRaw}; ${direccionRaw}; ${ref1Raw}; ${ref2Raw}; ${saldoRaw}; ${latRaw}; ${lngRaw}`);
       });
-
       if (lineas.length === 0) {
         statusEl.textContent = "⚠️ No se encontraron filas válidas con Nombre y Teléfono en las dos primeras columnas.";
         return;
       }
-
       document.getElementById("inputContactos").value = lineas.join("\n");
       statusEl.textContent = `✅ ${lineas.length} contacto(s) cargados desde "${file.name}"${saltados > 0 ? ` (${saltados} fila(s) omitida(s) por datos incompletos)` : ""}.`;
     } catch (err) {
@@ -381,26 +343,21 @@ function cargarExcel(evt) {
   };
   reader.readAsArrayBuffer(file);
 }
-
 // ---------- Generar lista ----------
 function generarLista() {
   const errEl = document.getElementById("errorMsg");
   errEl.style.display = "none";
-
   const lineas = document.getElementById("inputContactos").value
     .split("\n").map(l => l.trim()).filter(l => l.length > 0);
   const plantillas = obtenerPlantillas();
-
   if (lineas.length === 0 || plantillas.length === 0) {
     errEl.textContent = "⚠️ Debes cargar/pegar contactos y al menos una plantilla de mensaje.";
     errEl.style.display = "block";
     return;
   }
-
   const contactos = [];
   const numsVistos = new Map();
   const avisos = [];
-
   for (const linea of lineas) {
     const partes = linea.split(";").map(p => p.trim());
     if (partes.length < 2) {
@@ -424,17 +381,14 @@ function generarLista() {
       errEl.style.display = "block";
       return;
     }
-
     if (correoRaw && !esEmailValido(correoRaw)) {
       avisos.push(`El correo "${correoRaw}" de ${nombre} no parece válido — se ignorará para ese contacto.`);
     }
-
     if (numsVistos.has(tel) && tel) {
       avisos.push(`"${telRaw}" aparece más de una vez (${numsVistos.get(tel)} y ${nombre}).`);
     } else if (tel) {
       numsVistos.set(tel, nombre);
     }
-
     // Latitud/longitud válidas solo si ambas están presentes y son números
     const lat = parseFloat(latRaw);
     const lng = parseFloat(lngRaw);
@@ -442,14 +396,12 @@ function generarLista() {
     if ((latRaw || lngRaw) && !tieneUbicacion) {
       avisos.push(`La ubicación de ${nombre} está incompleta o no es válida (latitud/longitud) — se omite el enlace de mapa para ese contacto.`);
     }
-
     contactos.push({
       nombre, telefono: tel, telefonoOriginal: telRaw, correo: correoRaw,
       direccion: direccionRaw, ref1: ref1Raw, ref2: ref2Raw,
       saldo: saldoRaw, lat: tieneUbicacion ? lat : null, lng: tieneUbicacion ? lng : null
     });
   }
-
   sentSet.clear();
   data = contactos.map(c => {
     const plantillaElegida = plantillas[Math.floor(Math.random() * plantillas.length)];
@@ -477,9 +429,7 @@ function generarLista() {
         .replace(/\{UBICACION\}/g, urlUbicacion)
     };
   });
-
   const usaPlaceholder = (marca) => plantillas.some(p => p.includes(marca));
-
   const invalidos = data.filter(d => !d.valido).length;
   const conCorreo = data.filter(d => d.correo).length;
   const conUbicacion = data.filter(d => d.urlUbicacion).length;
@@ -509,12 +459,10 @@ function generarLista() {
   if (plantillas.length > 1) {
     avisos.push(`Se usaron ${plantillas.length} variantes de plantilla, elegidas al azar entre los contactos.`);
   }
-
   if (avisos.length > 0) {
     errEl.textContent = "⚠️ Avisos:\n" + avisos.join("\n");
     errEl.style.display = "block";
   }
-
   const summaryBox = document.getElementById("summaryBox");
   summaryBox.textContent = `${data.length} contacto${data.length === 1 ? "" : "s"} cargado${data.length === 1 ? "" : "s"} (${data.length - invalidos} listos para WhatsApp/SMS, ${conCorreo} con correo, ${conUbicacion} con ubicación)`;
   summaryBox.style.display = "block";
@@ -523,18 +471,15 @@ function generarLista() {
   render();
   document.getElementById("sendSection").scrollIntoView({ behavior: "smooth" });
 }
-
 function updateProgress() {
   const count = sentSet.size;
   document.getElementById("progressFill").style.width = (count / data.length * 100) + "%";
   document.getElementById("progressLabel").textContent = `${count} de ${data.length} enviados`;
 }
-
 function onEdit(i, el) {
   data[i].msg = el.value;
   updateCharCount(i, el.value);
 }
-
 function updateCharCount(i, msg) {
   const el = document.getElementById(`charcount-${i}`);
   if (!el) return;
@@ -543,12 +488,10 @@ function updateCharCount(i, msg) {
     : `${msg.length} caracteres`;
   el.className = "charcount" + (msg.length > 1500 ? " warn" : "");
 }
-
 function buildWaUrl(i) {
   const item = data[i];
   return `https://wa.me/${item.telefono}?text=${encodeURIComponent(item.msg)}`;
 }
-
 // iOS requiere "&body=" (con & aunque no haya otros parámetros antes), Android acepta "?body="
 function buildSmsUrl(i) {
   const item = data[i];
@@ -556,26 +499,22 @@ function buildSmsUrl(i) {
   const separador = esIOS ? "&" : "?";
   return `sms:+${item.telefono}${separador}body=${encodeURIComponent(item.msg)}`;
 }
-
 // En computadora no existe un enlace oficial que abra Google Messages con
 // el número y el texto ya listos (a diferencia de WhatsApp). Lo más cercano:
 // abrir Messages for Web y copiar el mensaje al portapapeles para pegarlo.
 function esEscritorio() {
   return !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 }
-
 function buildOutlookUrl(i) {
   const asunto = document.getElementById("asunto").value || "";
   const item = data[i];
   return `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(item.correo)}&subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(item.msg)}`;
 }
-
 function buildGmailUrl(i) {
   const asunto = document.getElementById("asunto").value || "";
   const item = data[i];
   return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(item.correo)}&su=${encodeURIComponent(asunto)}&body=${encodeURIComponent(item.msg)}`;
 }
-
 // Un <a> temporal es más confiable que location.href para protocolos como sms:
 function abrirEnlace(url) {
   const a = document.createElement("a");
@@ -585,7 +524,6 @@ function abrirEnlace(url) {
   a.click();
   document.body.removeChild(a);
 }
-
 function irAlSiguiente(iActual) {
   for (let j = iActual + 1; j < data.length; j++) {
     if (!sentSet.has(j)) {
@@ -595,7 +533,6 @@ function irAlSiguiente(iActual) {
     }
   }
 }
-
 function enviarWhatsapp(i) {
   if (!data[i].valido || enEsperaDeEnvio()) return;
   const url = buildWaUrl(i);
@@ -614,10 +551,8 @@ function enviarWhatsapp(i) {
     iniciarEsperaEnvio();
   }, 800);
 }
-
 function enviarSms(i) {
   if (!data[i].valido) return;
-
   if (esEscritorio()) {
     const item = data[i];
     navigator.clipboard.writeText(item.msg).then(() => {
@@ -647,7 +582,6 @@ function enviarSms(i) {
     }, 1200);
     return;
   }
-
   // En celular: el enlace sms: abre la app de mensajes con todo prellenado.
   abrirEnlace(buildSmsUrl(i));
   setTimeout(() => {
@@ -656,7 +590,6 @@ function enviarSms(i) {
     irAlSiguiente(i);
   }, 1200);
 }
-
 function abrirOutlook(i) {
   if (!data[i].correo) return;
   window.open(buildOutlookUrl(i), "_blank");
@@ -666,7 +599,6 @@ function abrirOutlook(i) {
     irAlSiguiente(i);
   }, 800);
 }
-
 function abrirGmail(i) {
   if (!data[i].correo) return;
   window.open(buildGmailUrl(i), "_blank");
@@ -676,7 +608,6 @@ function abrirGmail(i) {
     irAlSiguiente(i);
   }, 800);
 }
-
 function copiarMensaje(i) {
   const item = data[i];
   const destinoCorreo = item.correo ? `\nCorreo: ${item.correo}` : "";
@@ -690,30 +621,24 @@ function copiarMensaje(i) {
     }
   });
 }
-
 function undoSent(i) {
   sentSet.delete(i);
   render();
 }
-
 function render() {
   const list = document.getElementById("list");
   list.innerHTML = "";
-
   const enEspera = enEsperaDeEnvio();
-
   let siguientePendiente = -1;
   for (let j = 0; j < data.length; j++) {
     if (!sentSet.has(j)) { siguientePendiente = j; break; }
   }
-
   data.forEach((item, i) => {
     const isSent = sentSet.has(i);
     const isNext = i === siguientePendiente;
     const card = document.createElement("div");
     card.className = "card" + (isSent ? " sent" : "") + (isNext ? " next" : "");
     card.id = `card-${i}`;
-
     const nombreSafe = escapeHtml(item.nombre);
     const telSafe = escapeHtml(item.telefonoOriginal);
     const correoSafe = escapeHtml(item.correo);
@@ -722,9 +647,7 @@ function render() {
     const ref2Safe = escapeHtml(item.ref2);
     const saldoSafe = escapeHtml(item.saldo);
     const msgSafe = escapeHtml(item.msg);
-
     const refs = [item.ref1 ? `Ref1: ${ref1Safe}` : "", item.ref2 ? `Ref2: ${ref2Safe}` : ""].filter(Boolean).join(" · ");
-
     card.innerHTML = `
       <div class="card-head">
         <div class="num-badge">${isSent ? "✓" : i + 1}</div>
@@ -754,12 +677,9 @@ function render() {
     list.appendChild(card);
     updateCharCount(i, item.msg);
   });
-
   updateProgress();
 }
 </script>
-
 <div class="watermark">@hypergecko491</div>
-
 </body>
 </html>
