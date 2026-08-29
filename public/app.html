@@ -113,8 +113,10 @@
   .btn-outlook:disabled { background: #9dc3e3; cursor: not-allowed; }
   .btn-gmail { background: #c5221f; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 90px; text-decoration: none; text-align: center; display: inline-block; }
   .btn-gmail:disabled { background: #e0a19f; cursor: not-allowed; }
-  .btn-telegram { background: #229ED9; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 90px; text-decoration: none; text-align: center; display: inline-block; }
-  .btn-telegram:disabled { background: #a7d3ea; cursor: not-allowed; }
+  .csaldo { font-size: 12px; font-weight: 700; color: #1c7c3f; }
+  .clocation { font-size: 11.5px; }
+  .clocation a { color: var(--label-color); text-decoration: none; font-weight: 600; }
+  .clocation a:hover { text-decoration: underline; }
   .btn-copy { background: var(--btn-copy-bg); color: var(--label-color); border: 1px solid var(--input-border); border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
   .btn-sent { background: var(--btn-sent-bg); color: var(--text-hint); border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; }
   #sendSection { display: none; }
@@ -157,13 +159,13 @@
   <input type="file" id="excelFile" class="file-hidden" accept=".xlsx,.xls,.csv" onchange="cargarExcel(event)">
   <button class="btn-excel" onclick="document.getElementById('excelFile').click()">Elegir archivo Excel</button>
   <div class="excel-status" id="excelStatus"></div>
-  <p class="hint">Columna A: <b>Nombre</b>. Columna B: <b>Teléfono</b>. Columna C (opcional): <b>Correo</b>. Columna D (opcional): <b>Domicilio</b>. Columnas E y F (opcionales): <b>Referencia 1</b> y <b>Referencia 2</b>. Columna G (opcional): <b>usuario de Telegram</b> (con o sin @). Si la primera fila es encabezado, se detecta y se ignora automáticamente.</p>
+  <p class="hint">Columna A: <b>Nombre</b>. Columna B: <b>Teléfono</b>. Columna C (opcional): <b>Correo</b>. Columna D (opcional): <b>Domicilio</b>. Columnas E y F (opcionales): <b>Referencia 1</b> y <b>Referencia 2</b>. Columna G (opcional): <b>Saldo</b>. Columnas H e I (opcionales): <b>Latitud</b> y <b>Longitud</b>. Si la primera fila es encabezado, se detecta y se ignora automáticamente.</p>
 </div>
 
 <div class="editor-box">
-  <label>📇 O pega contactos manualmente (Nombre; Teléfono; Correo; Domicilio; Ref1; Ref2; UsuarioTelegram — uno por línea)</label>
-  <textarea id="inputContactos" rows="8" placeholder="Ej:&#10;Juan Pérez López; 2221234567; juan.perez@ejemplo.com; Av. Reforma 123, Col. Centro, Puebla; María López; Pedro Sánchez; @juanperez&#10;María García Ruiz; 5215512345678; ; Calle 5 de Mayo 45, Cholula; ; Ana Torres; "></textarea>
-  <p class="hint">Los campos se separan con <b>punto y coma ( ; )</b> — así el domicilio puede llevar comas sin problema. Todos menos Nombre y Teléfono son opcionales: deja el campo vacío entre los dos puntos y coma si no aplica. El usuario de Telegram es el que aparece en su perfil (con o sin @) — sin ese dato, el botón de Telegram queda desactivado para ese contacto.</p>
+  <label>📇 O pega contactos manualmente (Nombre; Teléfono; Correo; Domicilio; Ref1; Ref2; Saldo; Latitud; Longitud — uno por línea)</label>
+  <textarea id="inputContactos" rows="8" placeholder="Ej:&#10;Juan Pérez López; 2221234567; juan.perez@ejemplo.com; Av. Reforma 123, Col. Centro, Puebla; María López; Pedro Sánchez; 1500; 19.0414; -98.2063&#10;María García Ruiz; 5215512345678; ; Calle 5 de Mayo 45, Cholula; ; Ana Torres; 850; ; "></textarea>
+  <p class="hint">Los campos se separan con <b>punto y coma ( ; )</b> — así el domicilio puede llevar comas sin problema. Todos menos Nombre y Teléfono son opcionales: deja el campo vacío entre los dos puntos y coma si no aplica. Latitud y longitud se usan para armar un enlace de ubicación en Google Maps (si dejas alguna vacía, no se genera el enlace para ese contacto).</p>
 </div>
 
 <div class="editor-box">
@@ -185,7 +187,7 @@
   <label>💬 Plantillas del mensaje (variantes)</label>
   <div id="plantillasContainer"></div>
   <button type="button" class="btn-variant-add" onclick="agregarVariante()">+ Agregar variante</button>
-  <p class="hint">Usa {NOMBRE}, {DIRECCION}, {REF1} y {REF2} igual que antes. Si agregas más de una variante, cada contacto recibe una al azar — así no se manda el mismo texto exacto a todos, lo que ayuda a que WhatsApp no lo detecte como spam masivo.</p>
+  <p class="hint">Usa {NOMBRE}, {DIRECCION}, {REF1}, {REF2}, {SALDO} y {UBICACION} (enlace a Google Maps, solo si cargaste latitud/longitud). Si agregas más de una variante, cada contacto recibe una al azar — así no se manda el mismo texto exacto a todos, lo que ayuda a que WhatsApp no lo detecte como spam masivo.</p>
 </div>
 
 <p class="error" id="errorMsg"></p>
@@ -200,7 +202,7 @@
 
   <div id="list"></div>
 
-  <p class="note">"WhatsApp" y "Telegram" abren el chat con el mensaje ya escrito, en PC, Android o iPhone. "SMS" abre tu app de mensajes (solo celular). "Outlook" y "Gmail" abren la redacción en el navegador, ya con todo listo. En todos los casos, tú das el clic final de "Enviar" dentro de cada app. "Copiar" pega el texto para pegarlo donde quieras.<br><br>El progreso se guarda solo mientras esta pestaña está abierta; si recargas la página se reinicia.</p>
+  <p class="note">"WhatsApp" abre el chat con el mensaje ya escrito, en PC, Android o iPhone. "SMS" abre tu app de mensajes (solo celular). "Outlook" y "Gmail" abren la redacción en el navegador, ya con todo listo. En todos los casos, tú das el clic final de "Enviar" dentro de cada app. "Copiar" pega el texto para pegarlo donde quieras.<br><br>El progreso se guarda solo mientras esta pestaña está abierta; si recargas la página se reinicia.</p>
 </div>
 
 <script>
@@ -354,13 +356,15 @@ function cargarExcel(evt) {
         const direccionRaw = String(row[3] || "").trim();
         const ref1Raw = String(row[4] || "").trim();
         const ref2Raw = String(row[5] || "").trim();
-        const telegramRaw = String(row[6] || "").trim();
+        const saldoRaw = String(row[6] || "").trim();
+        const latRaw = String(row[7] || "").trim();
+        const lngRaw = String(row[8] || "").trim();
         if (!nombre || !telRaw) { saltados++; return; }
 
         // Detecta fila de encabezado (ej. "Nombre" / "Teléfono", sin dígitos en el teléfono)
         if (idx === 0 && !/\d/.test(telRaw)) { saltados++; return; }
 
-        lineas.push(`${nombre}; ${telRaw}; ${correoRaw}; ${direccionRaw}; ${ref1Raw}; ${ref2Raw}; ${telegramRaw}`);
+        lineas.push(`${nombre}; ${telRaw}; ${correoRaw}; ${direccionRaw}; ${ref1Raw}; ${ref2Raw}; ${saldoRaw}; ${latRaw}; ${lngRaw}`);
       });
 
       if (lineas.length === 0) {
@@ -399,7 +403,7 @@ function generarLista() {
   for (const linea of lineas) {
     const partes = linea.split(";").map(p => p.trim());
     if (partes.length < 2) {
-      errEl.textContent = `⚠️ Esta línea no tiene el formato "Nombre; teléfono; correo; domicilio; ref1; ref2; telegram": "${linea}"`;
+      errEl.textContent = `⚠️ Esta línea no tiene el formato "Nombre; teléfono; correo; domicilio; ref1; ref2; saldo; latitud; longitud": "${linea}"`;
       errEl.style.display = "block";
       return;
     }
@@ -409,7 +413,9 @@ function generarLista() {
     const direccionRaw = partes.length > 3 ? partes[3] : "";
     const ref1Raw = partes.length > 4 ? partes[4] : "";
     const ref2Raw = partes.length > 5 ? partes[5] : "";
-    const telegramRaw = partes.length > 6 ? partes.slice(6).join(";").trim() : "";
+    const saldoRaw = partes.length > 6 ? partes[6] : "";
+    const latRaw = partes.length > 7 ? partes[7] : "";
+    const lngRaw = partes.length > 8 ? partes.slice(8).join(";").trim() : "";
     const tel = normalizarTelefono(telRaw);
 
     if (!nombre) {
@@ -428,15 +434,26 @@ function generarLista() {
       numsVistos.set(tel, nombre);
     }
 
-    // Limpia el usuario de Telegram: sin @, sin espacios
-    const telegram = telegramRaw.replace(/^@/, "").trim();
+    // Latitud/longitud válidas solo si ambas están presentes y son números
+    const lat = parseFloat(latRaw);
+    const lng = parseFloat(lngRaw);
+    const tieneUbicacion = latRaw !== "" && lngRaw !== "" && !isNaN(lat) && !isNaN(lng);
+    if ((latRaw || lngRaw) && !tieneUbicacion) {
+      avisos.push(`La ubicación de ${nombre} está incompleta o no es válida (latitud/longitud) — se omite el enlace de mapa para ese contacto.`);
+    }
 
-    contactos.push({ nombre, telefono: tel, telefonoOriginal: telRaw, correo: correoRaw, direccion: direccionRaw, ref1: ref1Raw, ref2: ref2Raw, telegram });
+    contactos.push({
+      nombre, telefono: tel, telefonoOriginal: telRaw, correo: correoRaw,
+      direccion: direccionRaw, ref1: ref1Raw, ref2: ref2Raw,
+      saldo: saldoRaw, lat: tieneUbicacion ? lat : null, lng: tieneUbicacion ? lng : null
+    });
   }
 
   sentSet.clear();
   data = contactos.map(c => {
     const plantillaElegida = plantillas[Math.floor(Math.random() * plantillas.length)];
+    const tieneUbicacion = c.lat !== null && c.lng !== null;
+    const urlUbicacion = tieneUbicacion ? `https://www.google.com/maps?q=${c.lat},${c.lng}` : "";
     return {
       nombre: c.nombre,
       telefono: c.telefono,
@@ -446,12 +463,17 @@ function generarLista() {
       direccion: c.direccion,
       ref1: c.ref1,
       ref2: c.ref2,
-      telegram: c.telegram,
+      saldo: c.saldo,
+      lat: c.lat,
+      lng: c.lng,
+      urlUbicacion,
       msg: plantillaElegida
         .replace(/\{NOMBRE\}/g, c.nombre)
         .replace(/\{DIRECCION\}/g, c.direccion || "")
         .replace(/\{REF1\}/g, c.ref1 || "")
         .replace(/\{REF2\}/g, c.ref2 || "")
+        .replace(/\{SALDO\}/g, c.saldo || "")
+        .replace(/\{UBICACION\}/g, urlUbicacion)
     };
   });
 
@@ -459,10 +481,12 @@ function generarLista() {
 
   const invalidos = data.filter(d => !d.valido).length;
   const conCorreo = data.filter(d => d.correo).length;
-  const conTelegram = data.filter(d => d.telegram).length;
+  const conUbicacion = data.filter(d => d.urlUbicacion).length;
   const sinDireccion = data.filter(d => !d.direccion).length;
   const sinRef1 = data.filter(d => !d.ref1).length;
   const sinRef2 = data.filter(d => !d.ref2).length;
+  const sinSaldo = data.filter(d => !d.saldo).length;
+  const sinUbicacion = data.filter(d => !d.urlUbicacion).length;
   if (invalidos > 0) {
     avisos.push(`${invalidos} número(s) no parecen válidos (deben quedar entre 10 y 15 dígitos con código de país). Revísalos en las tarjetas marcadas en rojo — el botón "Enviar" estará deshabilitado para esos.`);
   }
@@ -475,6 +499,12 @@ function generarLista() {
   if (usaPlaceholder("{REF2}") && sinRef2 > 0) {
     avisos.push(`${sinRef2} contacto(s) no tienen Referencia 2 — en esos mensajes {REF2} quedará vacío, revísalos antes de enviar.`);
   }
+  if (usaPlaceholder("{SALDO}") && sinSaldo > 0) {
+    avisos.push(`${sinSaldo} contacto(s) no tienen saldo cargado — en esos mensajes {SALDO} quedará vacío, revísalos antes de enviar.`);
+  }
+  if (usaPlaceholder("{UBICACION}") && sinUbicacion > 0) {
+    avisos.push(`${sinUbicacion} contacto(s) no tienen latitud/longitud — en esos mensajes {UBICACION} quedará vacío, revísalos antes de enviar.`);
+  }
   if (plantillas.length > 1) {
     avisos.push(`Se usaron ${plantillas.length} variantes de plantilla, elegidas al azar entre los contactos.`);
   }
@@ -485,7 +515,7 @@ function generarLista() {
   }
 
   const summaryBox = document.getElementById("summaryBox");
-  summaryBox.textContent = `${data.length} contacto${data.length === 1 ? "" : "s"} cargado${data.length === 1 ? "" : "s"} (${data.length - invalidos} listos para WhatsApp/SMS, ${conCorreo} con correo, ${conTelegram} con Telegram)`;
+  summaryBox.textContent = `${data.length} contacto${data.length === 1 ? "" : "s"} cargado${data.length === 1 ? "" : "s"} (${data.length - invalidos} listos para WhatsApp/SMS, ${conCorreo} con correo, ${conUbicacion} con ubicación)`;
   summaryBox.style.display = "block";
 
   document.getElementById("sendSection").style.display = "block";
@@ -516,13 +546,6 @@ function updateCharCount(i, msg) {
 function buildWaUrl(i) {
   const item = data[i];
   return `https://wa.me/${item.telefono}?text=${encodeURIComponent(item.msg)}`;
-}
-
-// t.me funciona igual en PC (abre Telegram Desktop o Telegram Web), Android e iOS
-// (abre la app vía "Universal Link"). No requiere el número, solo el usuario.
-function buildTelegramUrl(i) {
-  const item = data[i];
-  return `https://t.me/${encodeURIComponent(item.telegram)}?text=${encodeURIComponent(item.msg)}`;
 }
 
 // iOS requiere "&body=" (con & aunque no haya otros parámetros antes), Android acepta "?body="
@@ -588,24 +611,6 @@ function enviarWhatsapp(i) {
     sentSet.add(i);
     irAlSiguiente(i);
     iniciarEsperaEnvio();
-  }, 800);
-}
-
-function enviarTelegram(i) {
-  if (!data[i].telegram) return;
-  const url = buildTelegramUrl(i);
-  const esIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (esIOS) {
-    // Mismo motivo que con WhatsApp: en iPhone, un clic real de <a> es más
-    // confiable que window.open() para que Safari haga el salto a la app.
-    abrirEnlace(url);
-  } else {
-    window.open(url, "_blank");
-  }
-  setTimeout(() => {
-    sentSet.add(i);
-    render();
-    irAlSiguiente(i);
   }, 800);
 }
 
@@ -714,7 +719,7 @@ function render() {
     const direccionSafe = escapeHtml(item.direccion);
     const ref1Safe = escapeHtml(item.ref1);
     const ref2Safe = escapeHtml(item.ref2);
-    const telegramSafe = escapeHtml(item.telegram);
+    const saldoSafe = escapeHtml(item.saldo);
     const msgSafe = escapeHtml(item.msg);
 
     const refs = [item.ref1 ? `Ref1: ${ref1Safe}` : "", item.ref2 ? `Ref2: ${ref2Safe}` : ""].filter(Boolean).join(" · ");
@@ -726,9 +731,10 @@ function render() {
           <div class="cname">${nombreSafe}</div>
           <div class="cphone${item.valido ? "" : " badphone"}">${telSafe}${item.valido ? "" : " — número inválido"}</div>
           ${item.correo ? `<div class="cemail">${correoSafe}</div>` : `<div class="cemail">Sin correo — solo WhatsApp/SMS</div>`}
-          ${item.telegram ? `<div class="cemail">✈️ @${telegramSafe}</div>` : ""}
           ${item.direccion ? `<div class="caddress">📍 ${direccionSafe}</div>` : ""}
           ${refs ? `<div class="caddress">👥 ${refs}</div>` : ""}
+          ${item.saldo ? `<div class="csaldo">💰 Saldo: ${saldoSafe}</div>` : ""}
+          ${item.urlUbicacion ? `<div class="clocation"><a href="${item.urlUbicacion}" target="_blank" rel="noopener">🗺️ Ver ubicación</a></div>` : ""}
         </div>
       </div>
       <textarea class="msg-edit" oninput="onEdit(${i}, this)" ${isSent ? "disabled" : ""}>${msgSafe}</textarea>
@@ -740,7 +746,6 @@ function render() {
              <button class="btn-sms" id="smsbtn-${i}" onclick="enviarSms(${i})" ${item.valido ? "" : "disabled"}>SMS</button>
              <button class="btn-outlook" onclick="abrirOutlook(${i})" ${item.correo ? "" : "disabled"}>Outlook</button>
              <button class="btn-gmail" onclick="abrirGmail(${i})" ${item.correo ? "" : "disabled"}>Gmail</button>
-             <button class="btn-telegram" onclick="enviarTelegram(${i})" ${item.telegram ? "" : "disabled"}>Telegram</button>
              <button class="btn-copy" id="copybtn-${i}" onclick="copiarMensaje(${i})">Copiar</button>`
         }
       </div>
