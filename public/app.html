@@ -1,685 +1,3016 @@
 <!DOCTYPE html>
-<!-- Herramienta desarrollada por @hypergecko491 -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Automatizacion de Mensajes</title>
+<title>Automatización de Mensajes</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #EEF1F5;
-    --text: #1c2530;
-    --text-heading: #16233B;
-    --text-muted: #5b6b80;
-    --text-hint: #8b96a3;
-    --card-bg: #fff;
-    --card-border: #e3e8ee;
-    --input-border: #dde3ea;
-    --label-color: #2B4C7E;
-    --btn-copy-bg: #eef1f5;
-    --btn-sent-bg: #e3e8ee;
-    --shadow: rgba(22,35,59,0.08);
-    --warn-bg: #fff8e1;
-    --warn-border: #f0d99a;
-    --warn-text: #6b5500;
-    --privacy-bg: #eef4ff;
-    --privacy-border: #c7d7f5;
-    --privacy-text: #2B4C7E;
-    --summary-bg: #f2f7f4;
-    --summary-border: #cde3d6;
-    --summary-text: #1c7c3f;
-    --wait-bg: #fff3e0;
-    --wait-border: #f0c78a;
-    --wait-text: #8a5a00;
-    --watermark-bg: rgba(255,255,255,0.6);
-    --variant-add-border: #b8c4d6;
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0
+}
+
+:root{
+  --bg:#eef1f5;
+  --text:#1c2530;
+  --text-heading:#16233b;
+  --text-muted:#5b6b80;
+  --text-hint:#8b96a3;
+  --card-bg:#fff;
+  --card-border:#e3e8ee;
+  --input-border:#dde3ea;
+  --label-color:#2b4c7e;
+  --btn-copy-bg:#eef1f5;
+  --btn-sent-bg:#e3e8ee;
+  --shadow:rgba(22,35,59,.08);
+
+  --warn-bg:#fff8e1;
+  --warn-border:#f0d99a;
+  --warn-text:#6b5500;
+
+  --privacy-bg:#eef4ff;
+  --privacy-border:#c7d7f5;
+  --privacy-text:#2b4c7e;
+
+  --summary-bg:#f2f7f4;
+  --summary-border:#cde3d6;
+  --summary-text:#1c7c3f;
+
+  --wait-bg:#fff3e0;
+  --wait-border:#f0c78a;
+  --wait-text:#8a5a00;
+
+  --danger-bg:#fff0ef;
+  --danger-border:#f2c2be;
+  --danger-text:#a93226;
+
+  --open-bg:#eef4ff;
+  --open-border:#c7d7f5;
+  --open-text:#2b4c7e;
+
+  --watermark-bg:rgba(255,255,255,.6);
+  --variant-add-border:#b8c4d6;
+}
+
+body.dark{
+  --bg:#10141c;
+  --text:#d7dee8;
+  --text-heading:#eef1f5;
+  --text-muted:#9aa7ba;
+  --text-hint:#78859a;
+  --card-bg:#1b2130;
+  --card-border:#2c3547;
+  --input-border:#3a4459;
+  --label-color:#8fb3ea;
+  --btn-copy-bg:#263047;
+  --btn-sent-bg:#2c3547;
+  --shadow:rgba(0,0,0,.35);
+
+  --warn-bg:#3a2f14;
+  --warn-border:#6b5400;
+  --warn-text:#f0d99a;
+
+  --privacy-bg:#182640;
+  --privacy-border:#2f4770;
+  --privacy-text:#a7c4f2;
+
+  --summary-bg:#15271d;
+  --summary-border:#24512f;
+  --summary-text:#6fe0a3;
+
+  --wait-bg:#3a2910;
+  --wait-border:#6b4d10;
+  --wait-text:#f0c78a;
+
+  --danger-bg:#3a1917;
+  --danger-border:#6b302b;
+  --danger-text:#ffaaa3;
+
+  --open-bg:#182640;
+  --open-border:#2f4770;
+  --open-text:#a7c4f2;
+
+  --watermark-bg:rgba(27,33,48,.7);
+  --variant-add-border:#3a4459;
+}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);
+  min-height:100vh;
+  padding:16px;
+  color:var(--text);
+  transition:background .2s,color .2s;
+}
+
+.top-controls{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-bottom:6px
+}
+
+.theme-toggle,
+.small-btn{
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  color:var(--text);
+  border-radius:20px;
+  padding:6px 14px;
+  font-size:12.5px;
+  font-weight:600;
+  cursor:pointer
+}
+
+.small-btn{
+  border-radius:7px;
+  padding:7px 10px
+}
+
+h1{
+  font-size:18px;
+  color:var(--text-heading);
+  margin-bottom:4px;
+  text-align:center;
+  letter-spacing:.2px
+}
+
+.subtitle{
+  font-size:13px;
+  color:var(--text-muted);
+  text-align:center;
+  margin-bottom:14px
+}
+
+.editor-box,
+.card{
+  background:var(--card-bg);
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:12px;
+  box-shadow:0 1px 3px var(--shadow);
+  border:1px solid var(--card-border)
+}
+
+.editor-box label{
+  font-size:11px;
+  font-weight:700;
+  color:var(--label-color);
+  display:block;
+  margin-bottom:6px;
+  text-transform:uppercase;
+  letter-spacing:.6px
+}
+
+.hint{
+  font-size:11px;
+  color:var(--text-hint);
+  margin-top:6px;
+  line-height:1.4
+}
+
+input[type=text],
+textarea{
+  width:100%;
+  border:1.5px solid var(--input-border);
+  border-radius:6px;
+  padding:10px;
+  font-size:13px;
+  font-family:inherit;
+  resize:vertical;
+  outline:none;
+  color:var(--text);
+  background:var(--card-bg)
+}
+
+input[type=text]:focus,
+textarea:focus{
+  border-color:var(--label-color)
+}
+
+.row2{
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+  flex-wrap:wrap
+}
+
+.row2>div{
+  flex:1;
+  min-width:140px
+}
+
+.btn-parse{
+  background:#16233b;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:12px 20px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  width:100%;
+  margin-top:10px;
+  letter-spacing:.3px
+}
+
+.btn-excel{
+  background:#1c7c3f;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:10px 16px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer
+}
+
+.file-hidden{
+  display:none
+}
+
+.excel-status{
+  font-size:11.5px;
+  color:var(--text-muted);
+  margin-top:6px
+}
+
+.error{
+  color:#e05a50;
+  font-size:12px;
+  margin-top:6px;
+  display:none;
+  white-space:pre-line
+}
+
+.privacy-box,
+.warn-box,
+.summary-box,
+.wait-label{
+  border-radius:8px;
+  padding:10px 12px;
+  font-size:11.5px;
+  margin-bottom:12px;
+  line-height:1.5
+}
+
+.privacy-box{
+  background:var(--privacy-bg);
+  border:1px solid var(--privacy-border);
+  color:var(--privacy-text)
+}
+
+.warn-box{
+  background:var(--warn-bg);
+  border:1px solid var(--warn-border);
+  color:var(--warn-text)
+}
+
+.summary-box{
+  background:var(--summary-bg);
+  border:1px solid var(--summary-border);
+  color:var(--summary-text);
+  display:none;
+  font-weight:600;
+  text-align:center
+}
+
+.wait-label{
+  background:var(--wait-bg);
+  border:1px solid var(--wait-border);
+  color:var(--wait-text);
+  display:none;
+  font-weight:600;
+  text-align:center
+}
+
+.progress-bar{
+  background:var(--input-border);
+  border-radius:20px;
+  height:8px;
+  margin-bottom:6px;
+  overflow:hidden
+}
+
+.progress-fill{
+  height:100%;
+  background:#1c7c3f;
+  border-radius:20px;
+  transition:width .3s;
+  width:0
+}
+
+.progress-label{
+  font-size:12px;
+  color:var(--text-muted);
+  text-align:center;
+  margin-bottom:10px
+}
+
+.toolbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:10px
+}
+
+.toolbar input{
+  flex:1;
+  min-width:220px
+}
+
+.filter-btn{
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  color:var(--text-muted);
+  border-radius:7px;
+  padding:8px 10px;
+  font-size:12px;
+  cursor:pointer
+}
+
+.filter-btn.active{
+  background:var(--label-color);
+  color:#fff;
+  border-color:var(--label-color)
+}
+
+.card{
+  scroll-margin-top:16px
+}
+
+.card.sent{
+  opacity:.68
+}
+
+.card.next{
+  border-color:#1c7c3f;
+  box-shadow:0 0 0 2px rgba(28,124,63,.15)
+}
+
+.card.opened{
+  border-color:var(--open-border)
+}
+
+.card.error-state{
+  border-color:var(--danger-border)
+}
+
+.card-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px
+}
+
+.num-badge{
+  background:#16233b;
+  color:#fff;
+  border-radius:50%;
+  width:28px;
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:700;
+  flex-shrink:0
+}
+
+.card.sent .num-badge{
+  background:#1c7c3f
+}
+
+.card.opened .num-badge{
+  background:#2b4c7e
+}
+
+.card.error-state .num-badge{
+  background:#a93226
+}
+
+.contact-info{
+  flex:1;
+  min-width:0
+}
+
+.cname{
+  font-size:14px;
+  font-weight:600;
+  color:var(--text-heading)
+}
+
+.cphone,
+.cemail{
+  font-size:12px;
+  color:var(--text-muted)
+}
+
+.cphone.badphone,
+.cemail.bademail{
+  color:#e05a50;
+  font-weight:600
+}
+
+.caddress{
+  font-size:11.5px;
+  color:var(--text-hint)
+}
+
+.msg-edit{
+  width:100%;
+  border:1px solid var(--card-border);
+  border-radius:6px;
+  padding:8px;
+  font-size:12.5px;
+  font-family:inherit;
+  color:var(--text);
+  background:var(--card-bg);
+  min-height:90px;
+  margin-bottom:4px
+}
+
+.charcount{
+  font-size:10.5px;
+  color:var(--text-hint);
+  text-align:right;
+  margin-bottom:6px
+}
+
+.charcount.warn{
+  color:#e05a50;
+  font-weight:600
+}
+
+.card-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap
+}
+
+.btn-send,
+.btn-sms,
+.btn-outlook,
+.btn-gmail,
+.btn-copy,
+.btn-sent,
+.btn-confirm,
+.btn-error,
+.btn-reset{
+  border:none;
+  border-radius:8px;
+  padding:9px 12px;
+  font-size:12.5px;
+  font-weight:600;
+  cursor:pointer;
+  text-align:center;
+  display:inline-block
+}
+
+.btn-send{
+  background:#1c7c3f;
+  color:#fff
+}
+
+.btn-sms{
+  background:#2b4c7e;
+  color:#fff
+}
+
+.btn-outlook{
+  background:#0072c6;
+  color:#fff
+}
+
+.btn-gmail{
+  background:#c5221f;
+  color:#fff
+}
+
+.btn-copy{
+  background:var(--btn-copy-bg);
+  color:var(--label-color);
+  border:1px solid var(--input-border)
+}
+
+.btn-sent{
+  background:var(--btn-sent-bg);
+  color:var(--text-hint)
+}
+
+.btn-confirm{
+  background:#1c7c3f;
+  color:#fff
+}
+
+.btn-error{
+  background:#a93226;
+  color:#fff
+}
+
+.btn-reset{
+  background:var(--btn-copy-bg);
+  color:var(--text-muted);
+  border:1px solid var(--input-border)
+}
+
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed
+}
+
+.status-line{
+  font-size:11.5px;
+  padding:7px 9px;
+  border-radius:6px;
+  margin-bottom:8px;
+  background:var(--open-bg);
+  border:1px solid var(--open-border);
+  color:var(--open-text)
+}
+
+.status-line.sent{
+  background:var(--summary-bg);
+  border-color:var(--summary-border);
+  color:var(--summary-text)
+}
+
+.status-line.error{
+  background:var(--danger-bg);
+  border-color:var(--danger-border);
+  color:var(--danger-text)
+}
+
+.note{
+  font-size:11.5px;
+  color:var(--text-hint);
+  text-align:center;
+  margin:10px 0 4px;
+  line-height:1.5
+}
+
+.variant-block{
+  position:relative;
+  margin-bottom:12px
+}
+
+.variant-label{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:6px
+}
+
+.variant-label span{
+  font-size:11px;
+  font-weight:700;
+  color:var(--label-color);
+  text-transform:uppercase;
+  letter-spacing:.5px
+}
+
+.btn-variant-remove{
+  background:none;
+  border:none;
+  color:#e05a50;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  padding:2px 6px
+}
+
+.btn-variant-add{
+  background:var(--btn-copy-bg);
+  color:var(--label-color);
+  border:1px dashed var(--variant-add-border);
+  border-radius:6px;
+  padding:8px 12px;
+  font-size:12.5px;
+  font-weight:700;
+  cursor:pointer;
+  width:100%;
+  margin-top:4px
+}
+
+.settings-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  color:var(--text-muted);
+  margin-top:8px
+}
+
+.settings-row input{
+  accent-color:#2b4c7e
+}
+
+.watermark{
+  position:fixed;
+  bottom:10px;
+  right:12px;
+  font-size:12px;
+  color:var(--text-heading);
+  opacity:.7;
+  pointer-events:none;
+  z-index:999;
+  font-weight:600;
+  background:var(--watermark-bg);
+  padding:3px 8px;
+  border-radius:6px
+}
+
+#sendSection{
+  display:none
+}
+
+.hidden{
+  display:none!important
+}
+
+.empty{
+  padding:20px;
+  text-align:center;
+  color:var(--text-muted);
+  font-size:13px
+}
+
+.counters{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+  font-size:12px;
+  color:var(--text-muted)
+}
+
+.counter b{
+  color:var(--text)
+}
+
+.mapping{
+  display:none;
+  margin-top:12px
+}
+
+.mapping-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px
+}
+
+.mapping-row{
+  display:flex;
+  gap:8px;
+  align-items:center
+}
+
+.mapping-row label{
+  min-width:100px;
+  margin:0;
+  text-transform:none;
+  letter-spacing:0
+}
+
+.mapping-row select{
+  flex:1;
+  border:1px solid var(--input-border);
+  background:var(--card-bg);
+  color:var(--text);
+  border-radius:6px;
+  padding:8px
+}
+
+.notice-success{
+  background:var(--summary-bg);
+  border:1px solid var(--summary-border);
+  color:var(--summary-text);
+  border-radius:8px;
+  padding:9px 12px;
+  font-size:12px;
+  margin-bottom:12px;
+  display:none
+}
+
+@media(max-width:700px){
+  body{
+    padding:10px
   }
-  body.dark {
-    --bg: #10141c;
-    --text: #d7dee8;
-    --text-heading: #eef1f5;
-    --text-muted: #9aa7ba;
-    --text-hint: #78859a;
-    --card-bg: #1b2130;
-    --card-border: #2c3547;
-    --input-border: #3a4459;
-    --label-color: #8fb3ea;
-    --btn-copy-bg: #263047;
-    --btn-sent-bg: #2c3547;
-    --shadow: rgba(0,0,0,0.35);
-    --warn-bg: #3a2f14;
-    --warn-border: #6b5400;
-    --warn-text: #f0d99a;
-    --privacy-bg: #182640;
-    --privacy-border: #2f4770;
-    --privacy-text: #a7c4f2;
-    --summary-bg: #15271d;
-    --summary-border: #24512f;
-    --summary-text: #6fe0a3;
-    --wait-bg: #3a2910;
-    --wait-border: #6b4d10;
-    --wait-text: #f0c78a;
-    --watermark-bg: rgba(27,33,48,0.7);
-    --variant-add-border: #3a4459;
+
+  .mapping-grid{
+    grid-template-columns:1fr
   }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); min-height: 100vh; padding: 16px; color: var(--text); transition: background 0.2s, color 0.2s; }
-  .top-controls { display: flex; justify-content: flex-end; margin-bottom: 6px; }
-  .theme-toggle { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text); border-radius: 20px; padding: 6px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-  h1 { font-size: 18px; color: var(--text-heading); margin-bottom: 4px; text-align: center; letter-spacing: 0.2px; }
-  .subtitle { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 14px; }
-  .editor-box { background: var(--card-bg); border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px var(--shadow); border: 1px solid var(--card-border); }
-  .editor-box label { font-size: 11px; font-weight: 700; color: var(--label-color); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.6px; }
-  .hint { font-size: 11px; color: var(--text-hint); margin-top: 6px; line-height: 1.4; }
-  input[type=text], textarea { width: 100%; border: 1.5px solid var(--input-border); border-radius: 6px; padding: 10px; font-size: 13px; font-family: inherit; resize: vertical; outline: none; color: var(--text); background: var(--card-bg); }
-  input[type=text]:focus, textarea:focus { border-color: var(--label-color); }
-  .row2 { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
-  .row2 > div { flex: 1; min-width: 140px; }
-  .btn-parse { background: #16233B; color: #fff; border: none; border-radius: 8px; padding: 12px 20px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; letter-spacing: 0.3px; }
-  .btn-parse:active { opacity: 0.85; }
-  .btn-excel { background: #1c7c3f; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-block; }
-  .file-hidden { display: none; }
-  .excel-status { font-size: 11.5px; color: var(--text-muted); margin-top: 6px; }
-  .error { color: #e05a50; font-size: 12px; margin-top: 6px; display: none; white-space: pre-line; }
-  .progress-bar { background: var(--input-border); border-radius: 20px; height: 8px; margin-bottom: 6px; overflow: hidden; }
-  .progress-fill { height: 100%; background: #1c7c3f; border-radius: 20px; transition: width 0.3s; width: 0%; }
-  .progress-label { font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 14px; }
-  .card { background: var(--card-bg); border-radius: 10px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px var(--shadow); border: 1px solid var(--card-border); scroll-margin-top: 16px; }
-  .card.sent { opacity: 0.55; }
-  .card.next { border-color: #1c7c3f; box-shadow: 0 0 0 2px rgba(28,124,63,0.15); }
-  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .num-badge { background: #16233B; color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-  .card.sent .num-badge { background: #1c7c3f; }
-  .contact-info { flex: 1; min-width: 0; }
-  .cname { font-size: 14px; font-weight: 600; color: var(--text-heading); }
-  .cphone { font-size: 12px; color: var(--text-muted); }
-  .cphone.badphone { color: #e05a50; font-weight: 600; }
-  .cemail { font-size: 12px; color: var(--text-muted); }
-  .cemail.bademail { color: #e05a50; font-weight: 600; }
-  .caddress { font-size: 11.5px; color: var(--text-hint); }
-  .msg-edit { width: 100%; border: 1px solid var(--card-border); border-radius: 6px; padding: 8px; font-size: 12.5px; font-family: inherit; color: var(--text); background: var(--card-bg); min-height: 90px; margin-bottom: 4px; }
-  .charcount { font-size: 10.5px; color: var(--text-hint); text-align: right; margin-bottom: 6px; }
-  .charcount.warn { color: #e05a50; font-weight: 600; }
-  .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .btn-send { background: #1c7c3f; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 90px; text-decoration: none; text-align: center; display: inline-block; }
-  .btn-send:disabled { background: #a9c2b0; cursor: not-allowed; }
-  .btn-sms { background: #2B4C7E; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 90px; text-decoration: none; text-align: center; display: inline-block; }
-  .btn-sms:disabled { background: #a7b6cc; cursor: not-allowed; }
-  .btn-outlook { background: #0072C6; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 90px; text-decoration: none; text-align: center; display: inline-block; }
-  .btn-outlook:disabled { background: #9dc3e3; cursor: not-allowed; }
-  .btn-gmail { background: #c5221f; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 90px; text-decoration: none; text-align: center; display: inline-block; }
-  .btn-gmail:disabled { background: #e0a19f; cursor: not-allowed; }
-  .csaldo { font-size: 12px; font-weight: 700; color: #1c7c3f; }
-  .clocation { font-size: 11.5px; }
-  .clocation a { color: var(--label-color); text-decoration: none; font-weight: 600; }
-  .clocation a:hover { text-decoration: underline; }
-  .btn-copy { background: var(--btn-copy-bg); color: var(--label-color); border: 1px solid var(--input-border); border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
-  .btn-sent { background: var(--btn-sent-bg); color: var(--text-hint); border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; }
-  #sendSection { display: none; }
-  .note { font-size: 11.5px; color: var(--text-hint); text-align: center; margin: 10px 0 4px; line-height: 1.5; }
-  .warn-box { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--warn-text); margin-bottom: 12px; line-height: 1.5; }
-  .privacy-box { background: var(--privacy-bg); border: 1px solid var(--privacy-border); border-radius: 8px; padding: 10px 12px; font-size: 11.5px; color: var(--privacy-text); margin-bottom: 12px; line-height: 1.5; }
-  .summary-box { background: var(--summary-bg); border: 1px solid var(--summary-border); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: var(--summary-text); margin-bottom: 10px; display: none; font-weight: 600; text-align: center; }
-  .wait-label { background: var(--wait-bg); border: 1px solid var(--wait-border); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; color: var(--wait-text); margin-bottom: 10px; display: none; font-weight: 600; text-align: center; }
-  .watermark { position: fixed; bottom: 10px; right: 12px; font-size: 12px; color: var(--text-heading); opacity: 0.7; pointer-events: none; z-index: 999; font-weight: 600; background: var(--watermark-bg); padding: 3px 8px; border-radius: 6px; }
-  .variant-block { position: relative; margin-bottom: 12px; }
-  .variant-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .variant-label span { font-size: 11px; font-weight: 700; color: var(--label-color); text-transform: uppercase; letter-spacing: 0.5px; }
-  .btn-variant-remove { background: none; border: none; color: #e05a50; font-size: 12px; font-weight: 700; cursor: pointer; padding: 2px 6px; }
-  .btn-variant-add { background: var(--btn-copy-bg); color: var(--label-color); border: 1px dashed var(--variant-add-border); border-radius: 6px; padding: 8px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px; }
-  .btn-variant-add:hover { background: var(--card-border); }
+
+  .toolbar input{
+    min-width:100%
+  }
+
+  .card-actions button{
+    flex:1;
+    min-width:120px
+  }
+}
 </style>
 </head>
-<body>
-<div class="top-controls">
-  <button class="theme-toggle" id="themeToggle" onclick="alternarTema()">🌙 Modo oscuro</button>
-</div>
-<h1>💬📧 Mensajería</h1>
-<p class="subtitle">Genera mensajes personalizados y ábrelos uno por uno en cada canal
-Desarrollado por @hypergecko491</p>
-<div class="privacy-box">
-  🔒 Este archivo no guarda contactos de una sesión a otra. El Excel se procesa aquí mismo, en tu navegador — no se sube a ningún servidor. Nada queda almacenado si recargas la página.
-</div>
-<div class="warn-box">
-  ⚠️ Importante: Esta herramienta abre cada chat con el mensaje ya escrito, pero tú das clic en "Enviar" dentro de WhatsApp para cada contacto.<br><br>
-  📱 En celular, "SMS" abre tu app de mensajes con el número y texto ya cargados. En computadora, Google no permite abrir el chat de un contacto específico desde un enlace — el botón copia el mensaje al portapapeles, abre Google Messages for Web, y te muestra un aviso recordándote a quién buscar; ahí abres tú esa conversación y pegas (Ctrl+V). La primera vez que uses Messages for Web, te pedirá vincular tu teléfono escaneando un código QR. Los SMS dependen de tu plan telefónico y pueden generar costo; los mensajes largos se dividen en varios SMS por el operador.<br><br>
-  📧 El botón "Outlook" abre la redacción en Outlook desde el navegador (outlook.live.com), ya con destinatario, asunto y mensaje listos; "Gmail" hace lo mismo con Gmail. Ambos requieren el correo del contacto en la columna C del Excel, o como tercer dato al pegar manualmente. Necesitas tener sesión iniciada en la cuenta correspondiente (la tuya, para enviar) en ese navegador.<br><br>
-  ⏱️ Después de cada envío por WhatsApp, ese botón se bloquea entre 8 y 12 segundos (al azar, no siempre el mismo tiempo) antes de poder enviar el siguiente. Esto ayuda a que el ritmo de envío se vea menos repetitivo/aCorreo yutomático y reduce el riesgo de bloqueo por parte de WhatsApp. SMS,  Gmail no tienen este bloqueo.
-</div>
-<div class="editor-box">
-  <label>📊 Cargar contactos desde Excel</label>
-  <input type="file" id="excelFile" class="file-hidden" accept=".xlsx,.xls,.csv" onchange="cargarExcel(event)">
-  <button class="btn-excel" onclick="document.getElementById('excelFile').click()">Elegir archivo Excel</button>
-  <div class="excel-status" id="excelStatus"></div>
-  <p class="hint">Columna A: <b>Nombre</b>. Columna B: <b>Teléfono</b>. Columna C (opcional): <b>Correo</b>. Columna D (opcional): <b>Domicilio</b>. Columnas E y F (opcionales): <b>Referencia 1</b> y <b>Referencia 2</b>. Columna G (opcional): <b>Saldo</b>. Columnas H e I (opcionales): <b>Latitud</b> y <b>Longitud</b>. Si la primera fila es encabezado, se detecta y se ignora automáticamente.</p>
-</div>
-<div class="editor-box">
-  <label>📇 O pega contactos manualmente (Nombre; Teléfono; Correo; Domicilio; Ref1; Ref2; Saldo; Latitud; Longitud — uno por línea)</label>
-  <textarea id="inputContactos" rows="8" placeholder="Ej:&#10;Juan Pérez López; 2221234567; juan.perez@ejemplo.com; Av. Reforma 123, Col. Centro, Puebla; María López; Pedro Sánchez; 1500; 19.0414; -98.2063&#10;María García Ruiz; 5215512345678; ; Calle 5 de Mayo 45, Cholula; ; Ana Torres; 850; ; "></textarea>
-  <p class="hint">Los campos se separan con <b>punto y coma ( ; )</b> — así el domicilio puede llevar comas sin problema. Todos menos Nombre y Teléfono son opcionales: deja el campo vacío entre los dos puntos y coma si no aplica. Latitud y longitud se usan para armar un enlace de ubicación en Google Maps (si dejas alguna vacía, no se genera el enlace para ese contacto).</p>
-</div>
-<div class="editor-box">
-  <label>Asunto del correo (aplica a todos)</label>
-  <input type="text" id="asunto" value="Aviso">
-</div>
-<div class="editor-box">
-  <div class="row2">
-    <div>
-      <label>Código de país por defecto</label>
-      <input type="text" id="codigoPais" value="52">
-      <p class="hint">Se agrega solo a números de 10 dígitos sin código. México = 52.</p>
-    </div>
-  </div>
-</div>
-<div class="editor-box">
-  <label>💬 Plantillas del mensaje (variantes)</label>
-  <div id="plantillasContainer"></div>
-  <button type="button" class="btn-variant-add" onclick="agregarVariante()">+ Agregar variante</button>
-  <p class="hint">Usa {NOMBRE}, {DIRECCION}, {REF1}, {REF2}, {SALDO} y {UBICACION}(enlaza a Google Maps si cargaste latitud/longitud). Si agregas más de una variante, cada contacto recibe una al azar — así no se manda el mismo texto exacto a todos, lo que ayuda a que WhatsApp no lo detecte como spam masivo.</p>
-</div>
-<p class="error" id="errorMsg"></p>
-<button class="btn-parse" onclick="generarLista()">✅ Generar lista de mensajes</button>
-<div id="sendSection">
-  <br>
-  <div class="summary-box" id="summaryBox"></div>
-  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-  <div class="progress-label" id="progressLabel"></div>
-  <div class="wait-label" id="waitLabel"></div>
-  <div id="list"></div>
-  <p class="note">"WhatsApp" abre el chat con el mensaje ya escrito, en PC, Android o iPhone. "SMS" abre tu app de mensajes (solo celular). "Outlook" y "Gmail" abren la redacción en el navegador, ya con todo listo. En todos los casos, tú das el clic final de "Enviar" dentro de cada app. "Copiar" pega el texto para pegarlo donde quieras.<br><br>El progreso se guarda solo mientras esta pestaña está abierta; si recargas la página se reinicia.</p>
-</div>
-<script>
-// ---------- Modo claro / oscuro ----------
-function aplicarTema(esOscuro) {
-  document.body.classList.toggle("dark", esOscuro);
-  const btn = document.getElementById("themeToggle");
-  if (btn) btn.textContent = esOscuro ? "☀️ Modo claro" : "🌙 Modo oscuro";
-}
-function alternarTema() {
-  const esOscuro = !document.body.classList.contains("dark");
-  aplicarTema(esOscuro);
-  try { localStorage.setItem("tema_mensajeria", esOscuro ? "dark" : "light"); } catch (e) {}
-}
-(function inicializarTema() {
-  let preferido = null;
-  try { preferido = localStorage.getItem("tema_mensajeria"); } catch (e) {}
-  if (preferido === "dark") {
-    aplicarTema(true);
-  } else if (preferido === "light") {
-    aplicarTema(false);
-  } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    aplicarTema(true); // sin preferencia guardada: respeta el modo del sistema
-  }
-})();
-let data = [];
-const sentSet = new Set(); // en memoria, se reinicia al recargar
-let waitUntil = 0;      // timestamp (ms) hasta el cual los botones de envío están bloqueados
-let waitInterval = null;
-let variantCounter = 0;
-// ---------- Variantes de plantilla ----------
-function agregarVariante(valorInicial) {
-  variantCounter++;
-  const id = variantCounter;
-  const contenedor = document.getElementById("plantillasContainer");
 
-  const bloque = document.createElement("div");
-  bloque.className = "variant-block";
-  bloque.id = `variante-${id}`;
-  bloque.innerHTML = `
-    <div class="variant-label">
-      <span>Variante ${id}</span>
-      <button type="button" class="btn-variant-remove" onclick="quitarVariante(${id})">✕ Quitar</button>
+<body>
+
+<div class="top-controls">
+  <button class="theme-toggle" id="themeToggle" onclick="alternarTema()">
+    🌙 Modo oscuro
+  </button>
+</div>
+
+<h1>💬📧 Mensajería</h1>
+
+<p class="subtitle">
+  Prepara mensajes personalizados y ábrelos uno por uno en cada canal
+</p>
+
+<div class="privacy-box">
+  🔒 <b>Privacidad:</b>
+  los contactos se procesan en este navegador y no se envían a tu servidor.
+</div>
+
+<div class="editor-box">
+
+  <label>1. Importar contactos</label>
+
+  <div class="row2">
+
+    <div>
+      <button class="btn-excel" onclick="document.getElementById('excelFile').click()">
+        📂 Importar Excel / CSV
+      </button>
+
+      <input
+        id="excelFile"
+        class="file-hidden"
+        type="file"
+        accept=".xlsx,.xls,.csv"
+        onchange="leerExcel(event)"
+      >
+
+      <div id="excelStatus" class="excel-status">
+        Ningún archivo seleccionado.
+      </div>
     </div>
-    <textarea id="plantilla-${id}" rows="8" placeholder="Hola {NOMBRE}, te escribimos para...">${valorInicial ? escapeHtml(valorInicial) : ""}</textarea>
-  `;
-  contenedor.appendChild(bloque);
+
+  </div>
+
+  <div id="mapping" class="mapping">
+
+    <label>Mapeo de columnas</label>
+
+    <div class="mapping-grid">
+
+      <div class="mapping-row">
+        <label>Nombre</label>
+        <select id="mapNombre"></select>
+      </div>
+
+      <div class="mapping-row">
+        <label>Teléfono</label>
+        <select id="mapTelefono"></select>
+      </div>
+
+      <div class="mapping-row">
+        <label>Correo</label>
+        <select id="mapCorreo"></select>
+      </div>
+
+      <div class="mapping-row">
+        <label>Dirección</label>
+        <select id="mapDireccion"></select>
+      </div>
+
+      <div class="mapping-row">
+        <label>Saldo</label>
+        <select id="mapSaldo"></select>
+      </div>
+
+    </div>
+
+    <button class="btn-parse" onclick="aplicarMapeo()">
+      ✓ Usar estas columnas
+    </button>
+
+  </div>
+
+  <div id="importError" class="error"></div>
+
+</div>
+
+<div class="editor-box">
+
+  <label>2. Configuración</label>
+
+  <div class="row2">
+
+    <div>
+      <label>Código de país</label>
+      <input id="codigoPais" type="text" value="52">
+      <div class="hint">
+        Se agregará automáticamente a teléfonos de 10 dígitos.
+      </div>
+    </div>
+
+    <div>
+      <label>Asunto de correo</label>
+      <input id="asunto" type="text" value="Aviso">
+    </div>
+
+  </div>
+
+  <div class="settings-row">
+    <input
+      type="checkbox"
+      id="guardarProgreso"
+      onchange="togglePersistencia()"
+    >
+    <label for="guardarProgreso">
+      Guardar progreso en este navegador
+    </label>
+  </div>
+
+</div>
+
+<div class="editor-box">
+
+  <label>3. Mensaje</label>
+
+  <div id="variantsContainer">
+
+    <div class="variant-block">
+
+      <div class="variant-label">
+        <span>Variante 1</span>
+      </div>
+
+      <textarea
+        id="plantilla-0"
+        placeholder="Escribe tu mensaje. Usa {NOMBRE}, {TELEFONO}, {CORREO}, {DIRECCION} o {SALDO}."
+      ></textarea>
+
+    </div>
+
+  </div>
+
+  <button
+    class="btn-variant-add"
+    onclick="agregarVariante()"
+  >
+    + Agregar variante
+  </button>
+
+  <div class="hint">
+    Las variantes se distribuyen de forma equilibrada entre los contactos.
+  </div>
+
+  <button
+    class="btn-parse"
+    onclick="generarMensajes()"
+  >
+    🚀 Preparar mensajes
+  </button>
+
+</div>
+
+<div id="sendSection">
+
+  <div id="summaryBox" class="summary-box"></div>
+
+  <div id="waitLabel" class="wait-label"></div>
+
+  <div class="editor-box">
+
+    <div class="counters" id="counters"></div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="progress-label" id="progressLabel">
+      0 enviados · 0 abiertos · 0 pendientes · 0 errores
+    </div>
+
+    <div class="toolbar">
+
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="🔎 Buscar nombre, teléfono o correo..."
+        oninput="render()"
+      >
+
+      <button
+        class="filter-btn active"
+        data-filter="all"
+        onclick="setFilter('all')"
+      >
+        Todos
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="pending"
+        onclick="setFilter('pending')"
+      >
+        Pendientes
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="opened"
+        onclick="setFilter('opened')"
+      >
+        Abiertos
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="sent"
+        onclick="setFilter('sent')"
+      >
+        Enviados
+      </button>
+
+      <button
+        class="filter-btn"
+        data-filter="error"
+        onclick="setFilter('error')"
+      >
+        Errores
+      </button>
+
+      <button
+        class="small-btn"
+        onclick="exportarReporte()"
+      >
+        📥 Reporte
+      </button>
+
+    </div>
+
+  </div>
+
+  <div id="list"></div>
+
+  <div class="note">
+    ⚠️ Abrir WhatsApp, SMS, Outlook o Gmail no significa que el mensaje haya sido enviado.
+    Después de realizar el envío, pulsa <b>✓ Marcar como enviado</b>.
+  </div>
+
+</div>
+
+<div class="watermark">
+  Mensajería
+</div>
+
+<script>
+
+const EST = {
+  PENDING: "pending",
+  OPENED: "opened",
+  SENT: "sent",
+  ERROR: "error"
+};
+
+let data = [];
+let rawRows = [];
+let headers = [];
+let pendingImport = null;
+
+let filter = "all";
+let persistir = false;
+
+let variantes = 1;
+
+let esperaEnvioHasta = 0;
+let esperaTimer = null;
+
+
+/* =========================
+   UTILIDADES
+========================= */
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 }
-function quitarVariante(id) {
-  const bloque = document.getElementById(`variante-${id}`);
-  const contenedor = document.getElementById("plantillasContainer");
-  if (bloque && contenedor.children.length > 1) {
-    bloque.remove();
-  }
+
+function normalizarTexto(value){
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"");
 }
-function obtenerPlantillas() {
-  const contenedor = document.getElementById("plantillasContainer");
-  const textareas = contenedor.querySelectorAll("textarea");
-  return Array.from(textareas).map(t => t.value).filter(v => v.trim().length > 0);
+
+function esEmailValido(email){
+  if(!email) return false;
+
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    String(email).trim()
+  );
 }
-// Crea la primera variante al cargar la página
-agregarVariante();
-function enEsperaDeEnvio() {
-  return Date.now() < waitUntil;
-}
-function iniciarEsperaEnvio() {
-  const delayMs = 8000 + Math.floor(Math.random() * 4001); // entre 8000 y 12000 ms, al azar
-  waitUntil = Date.now() + delayMs;
-  actualizarEtiquetaEspera();
-  render();
-  if (waitInterval) clearInterval(waitInterval);
-  waitInterval = setInterval(() => {
-    if (Date.now() >= waitUntil) {
-      clearInterval(waitInterval);
-      waitInterval = null;
-      actualizarEtiquetaEspera();
-      render();
-    } else {
-      actualizarEtiquetaEspera();
-    }
-  }, 250);
-}
-function actualizarEtiquetaEspera() {
-  const el = document.getElementById("waitLabel");
-  if (!el) return;
-  const segundos = Math.ceil(Math.max(0, waitUntil - Date.now()) / 1000);
-  if (segundos > 0) {
-    el.style.display = "block";
-    el.textContent = `⏱️ Espera ${segundos}s antes de enviar el siguiente WhatsApp...`;
-  } else {
-    el.style.display = "none";
-  }
-}
-function escapeHtml(str) {
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
-// Limpia un número: deja solo dígitos, quita 00/+ inicial, agrega código de país si hace falta
-function normalizarTelefono(raw) {
-  let digits = String(raw).replace(/\D/g, "");
-  digits = digits.replace(/^00/, "");
-  const codigo = (document.getElementById("codigoPais").value || "").replace(/\D/g, "");
-  if (digits.length === 10 && codigo) {
+
+function normalizarTelefono(value){
+
+  let digits = String(value ?? "")
+    .replace(/\D/g,"");
+
+  const codigo = String(
+    document.getElementById("codigoPais").value || "52"
+  ).replace(/\D/g,"");
+
+  if(digits.length === 10 && codigo){
     digits = codigo + digits;
   }
+
   return digits;
 }
-function telefonoValido(digits) {
-  return /^\d{10,15}$/.test(digits);
+
+function esTelefonoValido(phone){
+  return /^\d{11,15}$/.test(phone);
 }
-function esEmailValido(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-// ---------- Carga desde Excel ----------
-function cargarExcel(evt) {
-  const file = evt.target.files[0];
-  const statusEl = document.getElementById("excelStatus");
-  if (!file) return;
-  statusEl.textContent = "Leyendo archivo...";
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const wb = XLSX.read(e.target.result, { type: "array" });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
-      const lineas = [];
-      let saltados = 0;
-      rows.forEach((row, idx) => {
-        if (!row || row.length < 2) { saltados++; return; }
-        const nombre = String(row[0] || "").trim();
-        const telRaw = String(row[1] || "").trim();
-        const correoRaw = String(row[2] || "").trim();
-        const direccionRaw = String(row[3] || "").trim();
-        const ref1Raw = String(row[4] || "").trim();
-        const ref2Raw = String(row[5] || "").trim();
-        const saldoRaw = String(row[6] || "").trim();
-        const latRaw = String(row[7] || "").trim();
-        const lngRaw = String(row[8] || "").trim();
-        if (!nombre || !telRaw) { saltados++; return; }
-        // Detecta fila de encabezado (ej. "Nombre" / "Teléfono", sin dígitos en el teléfono)
-        if (idx === 0 && !/\d/.test(telRaw)) { saltados++; return; }
-        lineas.push(`${nombre}; ${telRaw}; ${correoRaw}; ${direccionRaw}; ${ref1Raw}; ${ref2Raw}; ${saldoRaw}; ${latRaw}; ${lngRaw}`);
-      });
-      if (lineas.length === 0) {
-        statusEl.textContent = "⚠️ No se encontraron filas válidas con Nombre y Teléfono en las dos primeras columnas.";
-        return;
-      }
-      document.getElementById("inputContactos").value = lineas.join("\n");
-      statusEl.textContent = `✅ ${lineas.length} contacto(s) cargados desde "${file.name}"${saltados > 0 ? ` (${saltados} fila(s) omitida(s) por datos incompletos)` : ""}.`;
-    } catch (err) {
-      statusEl.textContent = "⚠️ No se pudo leer el archivo. Verifica que sea un .xlsx, .xls o .csv válido.";
+
+function formatDate(value){
+  if(!value) return "";
+
+  return new Date(value).toLocaleString(
+    "es-MX",
+    {
+      dateStyle:"short",
+      timeStyle:"short"
     }
+  );
+}
+
+
+/* =========================
+   TEMA
+========================= */
+
+function alternarTema(){
+
+  document.body.classList.toggle("dark");
+
+  const oscuro =
+    document.body.classList.contains("dark");
+
+  localStorage.setItem(
+    "mensajeria_tema",
+    oscuro ? "dark" : "light"
+  );
+
+  document.getElementById("themeToggle").textContent =
+    oscuro
+      ? "☀️ Modo claro"
+      : "🌙 Modo oscuro";
+}
+
+(function restaurarTema(){
+
+  try{
+
+    if(localStorage.getItem("mensajeria_tema") === "dark"){
+
+      document.body.classList.add("dark");
+
+      document.getElementById("themeToggle").textContent =
+        "☀️ Modo claro";
+    }
+
+  }catch(e){}
+
+})();
+
+
+/* =========================
+   IMPORTAR EXCEL / CSV
+========================= */
+
+function leerExcel(event){
+
+  const file = event.target.files[0];
+
+  if(!file) return;
+
+  const status =
+    document.getElementById("excelStatus");
+
+  const error =
+    document.getElementById("importError");
+
+  error.style.display = "none";
+  error.textContent = "";
+
+  status.textContent =
+    `📂 Cargando ${file.name}...`;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+
+    try{
+
+      const workbook = XLSX.read(
+        e.target.result,
+        {
+          type:"array"
+        }
+      );
+
+      const sheet =
+        workbook.Sheets[
+          workbook.SheetNames[0]
+        ];
+
+      const rows =
+        XLSX.utils.sheet_to_json(
+          sheet,
+          {
+            header:1,
+            defval:""
+          }
+        );
+
+      if(!rows.length){
+
+        throw new Error(
+          "El archivo está vacío."
+        );
+      }
+
+      const firstRow =
+        rows[0].map(x => String(x ?? "").trim());
+
+      headers = firstRow;
+
+      rawRows = rows
+        .slice(1)
+        .filter(row =>
+          row.some(cell =>
+            String(cell ?? "").trim() !== ""
+          )
+        );
+
+      if(!rawRows.length){
+
+        throw new Error(
+          "No se encontraron registros debajo de los encabezados."
+        );
+      }
+
+      pendingImport = file;
+
+      prepararMapeo();
+
+      status.textContent =
+        `✓ ${file.name} · ${rawRows.length} registro(s) encontrados`;
+
+      document.getElementById("mapping").style.display =
+        "block";
+
+    }catch(err){
+
+      status.textContent =
+        "Error al leer el archivo.";
+
+      error.textContent =
+        "⚠️ " + err.message;
+
+      error.style.display = "block";
+    }
+
   };
+
   reader.readAsArrayBuffer(file);
 }
-// ---------- Generar lista ----------
-function generarLista() {
-  const errEl = document.getElementById("errorMsg");
-  errEl.style.display = "none";
-  const lineas = document.getElementById("inputContactos").value
-    .split("\n").map(l => l.trim()).filter(l => l.length > 0);
-  const plantillas = obtenerPlantillas();
-  if (lineas.length === 0 || plantillas.length === 0) {
-    errEl.textContent = "⚠️ Debes cargar/pegar contactos y al menos una plantilla de mensaje.";
-    errEl.style.display = "block";
-    return;
-  }
-  const contactos = [];
-  const numsVistos = new Map();
-  const avisos = [];
-  for (const linea of lineas) {
-    const partes = linea.split(";").map(p => p.trim());
-    if (partes.length < 2) {
-      errEl.textContent = `⚠️ Esta línea no tiene el formato "Nombre; teléfono; correo; domicilio; ref1; ref2; saldo; latitud; longitud": "${linea}"`;
-      errEl.style.display = "block";
-      return;
-    }
-    const nombre = partes[0];
-    const telRaw = partes[1];
-    const correoRaw = partes.length > 2 ? partes[2] : "";
-    const direccionRaw = partes.length > 3 ? partes[3] : "";
-    const ref1Raw = partes.length > 4 ? partes[4] : "";
-    const ref2Raw = partes.length > 5 ? partes[5] : "";
-    const saldoRaw = partes.length > 6 ? partes[6] : "";
-    const latRaw = partes.length > 7 ? partes[7] : "";
-    const lngRaw = partes.length > 8 ? partes.slice(8).join(";").trim() : "";
-    const tel = normalizarTelefono(telRaw);
 
-    if (!nombre) {
-      errEl.textContent = `⚠️ Falta el nombre en esta línea: "${linea}"`;
-      errEl.style.display = "block";
-      return;
-    }
-    if (correoRaw && !esEmailValido(correoRaw)) {
-      avisos.push(`El correo "${correoRaw}" de ${nombre} no parece válido — se ignorará para ese contacto.`);
-    }
-    if (numsVistos.has(tel) && tel) {
-      avisos.push(`"${telRaw}" aparece más de una vez (${numsVistos.get(tel)} y ${nombre}).`);
-    } else if (tel) {
-      numsVistos.set(tel, nombre);
-    }
-    // Latitud/longitud válidas solo si ambas están presentes y son números
-    const lat = parseFloat(latRaw);
-    const lng = parseFloat(lngRaw);
-    const tieneUbicacion = latRaw !== "" && lngRaw !== "" && !isNaN(lat) && !isNaN(lng);
-    if ((latRaw || lngRaw) && !tieneUbicacion) {
-      avisos.push(`La ubicación de ${nombre} está incompleta o no es válida (latitud/longitud) — se omite el enlace de mapa para ese contacto.`);
-    }
-    contactos.push({
-      nombre, telefono: tel, telefonoOriginal: telRaw, correo: correoRaw,
-      direccion: direccionRaw, ref1: ref1Raw, ref2: ref2Raw,
-      saldo: saldoRaw, lat: tieneUbicacion ? lat : null, lng: tieneUbicacion ? lng : null
-    });
+
+/* =========================
+   MAPEO INTELIGENTE
+========================= */
+
+function encontrarColumna(posibles){
+
+  for(const posible of posibles){
+
+    const idx =
+      headers.findIndex(h =>
+        normalizarTexto(h)
+          .includes(normalizarTexto(posible))
+      );
+
+    if(idx >= 0) return idx;
   }
-  sentSet.clear();
-  data = contactos.map(c => {
-    const plantillaElegida = plantillas[Math.floor(Math.random() * plantillas.length)];
-    const tieneUbicacion = c.lat !== null && c.lng !== null;
-    const urlUbicacion = tieneUbicacion ? `https://www.google.com/maps?q=${c.lat},${c.lng}` : "";
-    return {
-      nombre: c.nombre,
-      telefono: c.telefono,
-      telefonoOriginal: c.telefonoOriginal,
-      valido: telefonoValido(c.telefono),
-      correo: c.correo && esEmailValido(c.correo) ? c.correo : "",
-      direccion: c.direccion,
-      ref1: c.ref1,
-      ref2: c.ref2,
-      saldo: c.saldo,
-      lat: c.lat,
-      lng: c.lng,
-      urlUbicacion,
-      msg: plantillaElegida
-        .replace(/\{NOMBRE\}/g, c.nombre)
-        .replace(/\{DIRECCION\}/g, c.direccion || "")
-        .replace(/\{REF1\}/g, c.ref1 || "")
-        .replace(/\{REF2\}/g, c.ref2 || "")
-        .replace(/\{SALDO\}/g, c.saldo || "")
-        .replace(/\{UBICACION\}/g, urlUbicacion)
-    };
+
+  return -1;
+}
+
+function llenarSelect(id, selected){
+
+  const select =
+    document.getElementById(id);
+
+  select.innerHTML = "";
+
+  const none =
+    document.createElement("option");
+
+  none.value = "-1";
+  none.textContent = "— No usar —";
+
+  select.appendChild(none);
+
+  headers.forEach((header,index)=>{
+
+    const option =
+      document.createElement("option");
+
+    option.value = index;
+    option.textContent =
+      header || `Columna ${index + 1}`;
+
+    if(index === selected){
+      option.selected = true;
+    }
+
+    select.appendChild(option);
+
   });
-  const usaPlaceholder = (marca) => plantillas.some(p => p.includes(marca));
-  const invalidos = data.filter(d => !d.valido).length;
-  const conCorreo = data.filter(d => d.correo).length;
-  const conUbicacion = data.filter(d => d.urlUbicacion).length;
-  const sinDireccion = data.filter(d => !d.direccion).length;
-  const sinRef1 = data.filter(d => !d.ref1).length;
-  const sinRef2 = data.filter(d => !d.ref2).length;
-  const sinSaldo = data.filter(d => !d.saldo).length;
-  const sinUbicacion = data.filter(d => !d.urlUbicacion).length;
-  if (invalidos > 0) {
-    avisos.push(`${invalidos} número(s) no parecen válidos (deben quedar entre 10 y 15 dígitos con código de país). Revísalos en las tarjetas marcadas en rojo — el botón "Enviar" estará deshabilitado para esos.`);
-  }
-  if (usaPlaceholder("{DIRECCION}") && sinDireccion > 0) {
-    avisos.push(`${sinDireccion} contacto(s) no tienen domicilio — en esos mensajes {DIRECCION} quedará vacío, revísalos antes de enviar.`);
-  }
-  if (usaPlaceholder("{REF1}") && sinRef1 > 0) {
-    avisos.push(`${sinRef1} contacto(s) no tienen Referencia 1 — en esos mensajes {REF1} quedará vacío, revísalos antes de enviar.`);
-  }
-  if (usaPlaceholder("{REF2}") && sinRef2 > 0) {
-    avisos.push(`${sinRef2} contacto(s) no tienen Referencia 2 — en esos mensajes {REF2} quedará vacío, revísalos antes de enviar.`);
-  }
-  if (usaPlaceholder("{SALDO}") && sinSaldo > 0) {
-    avisos.push(`${sinSaldo} contacto(s) no tienen saldo cargado — en esos mensajes {SALDO} quedará vacío, revísalos antes de enviar.`);
-  }
-  if (usaPlaceholder("{UBICACION}") && sinUbicacion > 0) {
-    avisos.push(`${sinUbicacion} contacto(s) no tienen latitud/longitud — en esos mensajes {UBICACION} quedará vacío, revísalos antes de enviar.`);
-  }
-  if (plantillas.length > 1) {
-    avisos.push(`Se usaron ${plantillas.length} variantes de plantilla, elegidas al azar entre los contactos.`);
-  }
-  if (avisos.length > 0) {
-    errEl.textContent = "⚠️ Avisos:\n" + avisos.join("\n");
-    errEl.style.display = "block";
-  }
-  const summaryBox = document.getElementById("summaryBox");
-  summaryBox.textContent = `${data.length} contacto${data.length === 1 ? "" : "s"} cargado${data.length === 1 ? "" : "s"} (${data.length - invalidos} listos para WhatsApp/SMS, ${conCorreo} con correo, ${conUbicacion} con ubicación)`;
-  summaryBox.style.display = "block";
+}
 
-  document.getElementById("sendSection").style.display = "block";
-  render();
-  document.getElementById("sendSection").scrollIntoView({ behavior: "smooth" });
+function prepararMapeo(){
+
+  llenarSelect(
+    "mapNombre",
+    encontrarColumna([
+      "nombre",
+      "cliente",
+      "contacto",
+      "name"
+    ])
+  );
+
+  llenarSelect(
+    "mapTelefono",
+    encontrarColumna([
+      "telefono",
+      "tel",
+      "celular",
+      "movil",
+      "phone",
+      "whatsapp"
+    ])
+  );
+
+  llenarSelect(
+    "mapCorreo",
+    encontrarColumna([
+      "correo",
+      "email",
+      "e-mail",
+      "mail"
+    ])
+  );
+
+  llenarSelect(
+    "mapDireccion",
+    encontrarColumna([
+      "direccion",
+      "domicilio",
+      "address"
+    ])
+  );
+
+  llenarSelect(
+    "mapSaldo",
+    encontrarColumna([
+      "saldo",
+      "adeudo",
+      "deuda",
+      "importe",
+      "monto"
+    ])
+  );
 }
-function updateProgress() {
-  const count = sentSet.size;
-  document.getElementById("progressFill").style.width = (count / data.length * 100) + "%";
-  document.getElementById("progressLabel").textContent = `${count} de ${data.length} enviados`;
-}
-function onEdit(i, el) {
-  data[i].msg = el.value;
-  updateCharCount(i, el.value);
-}
-function updateCharCount(i, msg) {
-  const el = document.getElementById(`charcount-${i}`);
-  if (!el) return;
-  el.textContent = msg.length > 1500
-    ? `⚠️ Mensaje largo (${msg.length} caracteres) — revisa que se vea completo en WhatsApp`
-    : `${msg.length} caracteres`;
-  el.className = "charcount" + (msg.length > 1500 ? " warn" : "");
-}
-function buildWaUrl(i) {
-  const item = data[i];
-  return `https://wa.me/${item.telefono}?text=${encodeURIComponent(item.msg)}`;
-}
-// iOS requiere "&body=" (con & aunque no haya otros parámetros antes), Android acepta "?body="
-function buildSmsUrl(i) {
-  const item = data[i];
-  const esIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const separador = esIOS ? "&" : "?";
-  return `sms:+${item.telefono}${separador}body=${encodeURIComponent(item.msg)}`;
-}
-// En computadora no existe un enlace oficial que abra Google Messages con
-// el número y el texto ya listos (a diferencia de WhatsApp). Lo más cercano:
-// abrir Messages for Web y copiar el mensaje al portapapeles para pegarlo.
-function esEscritorio() {
-  return !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-}
-function buildOutlookUrl(i) {
-  const asunto = document.getElementById("asunto").value || "";
-  const item = data[i];
-  return `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(item.correo)}&subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(item.msg)}`;
-}
-function buildGmailUrl(i) {
-  const asunto = document.getElementById("asunto").value || "";
-  const item = data[i];
-  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(item.correo)}&su=${encodeURIComponent(asunto)}&body=${encodeURIComponent(item.msg)}`;
-}
-// Un <a> temporal es más confiable que location.href para protocolos como sms:
-function abrirEnlace(url) {
-  const a = document.createElement("a");
-  a.href = url;
-  a.style.display = "none";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-function irAlSiguiente(iActual) {
-  for (let j = iActual + 1; j < data.length; j++) {
-    if (!sentSet.has(j)) {
-      const el = document.getElementById(`card-${j}`);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
-  }
-}
-function enviarWhatsapp(i) {
-  if (!data[i].valido || enEsperaDeEnvio()) return;
-  const url = buildWaUrl(i);
-  const esIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (esIOS) {
-    // En iPhone, window.open() no siempre dispara el salto a la app de WhatsApp
-    // (Safari trata los "Universal Links" distinto en popups). Un clic real de
-    // <a> es el método confiable — el mismo truco que ya usamos para mailto/sms.
-    abrirEnlace(url);
-  } else {
-    window.open(url, "_blank");
-  }
-  setTimeout(() => {
-    sentSet.add(i);
-    irAlSiguiente(i);
-    iniciarEsperaEnvio();
-  }, 800);
-}
-function enviarSms(i) {
-  if (!data[i].valido) return;
-  if (esEscritorio()) {
-    const item = data[i];
-    navigator.clipboard.writeText(item.msg).then(() => {
-      const btn = document.getElementById(`smsbtn-${i}`);
-      if (btn) {
-        const old = btn.textContent;
-        btn.textContent = "Copiado ✓";
-        setTimeout(() => { btn.textContent = old; }, 1800);
-      }
-    });
-    window.open("https://messages.google.com/web/conversations", "_blank");
-    // Importante: Google no permite abrir el chat de un contacto específico
-    // desde una URL — solo abre la página general de Messages for Web.
-    // Por eso avisamos aquí a quién buscar, ya que el portapapeles solo
-    // lleva el mensaje, no el número.
-    alert(
-      `Mensaje copiado ✓\n\n` +
-      `Google Messages no permite abrir el chat de un contacto directo desde un enlace.\n\n` +
-      `1) Busca a "${item.nombre}" o el número ${item.telefonoOriginal} en la barra de búsqueda de Messages.\n` +
-      `2) Abre esa conversación.\n` +
-      `3) Pega el mensaje (Ctrl+V) y envíalo tú mismo.`
+
+function valorColumna(row, selectId){
+
+  const index =
+    Number(
+      document.getElementById(selectId).value
     );
-    setTimeout(() => {
-      sentSet.add(i);
-      render();
-      irAlSiguiente(i);
-    }, 1200);
+
+  if(index < 0) return "";
+
+  return String(
+    row[index] ?? ""
+  ).trim();
+}
+
+function aplicarMapeo(){
+
+  const nombreIdx =
+    Number(
+      document.getElementById("mapNombre").value
+    );
+
+  const telefonoIdx =
+    Number(
+      document.getElementById("mapTelefono").value
+    );
+
+  if(nombreIdx < 0){
+    showNotice(
+      "Debes seleccionar una columna para Nombre."
+    );
     return;
   }
-  // En celular: el enlace sms: abre la app de mensajes con todo prellenado.
-  abrirEnlace(buildSmsUrl(i));
-  setTimeout(() => {
-    sentSet.add(i);
-    render();
-    irAlSiguiente(i);
-  }, 1200);
+
+  if(telefonoIdx < 0){
+    showNotice(
+      "Debes seleccionar una columna para Teléfono."
+    );
+    return;
+  }
+
+  data =
+    rawRows.map((row,index)=>{
+
+      const nombre =
+        valorColumna(row,"mapNombre") ||
+        `Contacto ${index + 1}`;
+
+      const telefonoOriginal =
+        valorColumna(row,"mapTelefono");
+
+      const correoOriginal =
+        valorColumna(row,"mapCorreo");
+
+      const telefono =
+        normalizarTelefono(
+          telefonoOriginal
+        );
+
+      const correo =
+        esEmailValido(correoOriginal)
+          ? correoOriginal
+          : "";
+
+      return {
+
+        id: crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${index}`,
+
+        nombre,
+
+        telefono,
+
+        telefonoOriginal,
+
+        correo,
+
+        correoOriginal,
+
+        direccion:
+          valorColumna(row,"mapDireccion"),
+
+        saldo:
+          valorColumna(row,"mapSaldo"),
+
+        msg:"",
+
+        status:EST.PENDING,
+
+        channel:"",
+
+        openedAt:"",
+        sentAt:"",
+        errorAt:"",
+        errorReason:"",
+
+        valido:
+          esTelefonoValido(telefono)
+
+      };
+
+    });
+
+  document.getElementById("mapping").style.display =
+    "none";
+
+  document.getElementById("summaryBox").style.display =
+    "block";
+
+  document.getElementById("summaryBox").textContent =
+    `✓ ${data.length} contacto(s) cargados. ` +
+    `${data.filter(x => x.valido).length} teléfonos válidos.`;
+
+  document.getElementById("sendSection").style.display =
+    "block";
+
+  saveState();
+
+  render();
+
+  showNotice(
+    "Contactos cargados correctamente."
+  );
 }
-function abrirOutlook(i) {
-  if (!data[i].correo) return;
-  window.open(buildOutlookUrl(i), "_blank");
-  setTimeout(() => {
-    sentSet.add(i);
-    render();
-    irAlSiguiente(i);
-  }, 800);
+
+
+/* =========================
+   VARIANTES
+========================= */
+
+function agregarVariante(){
+
+  variantes++;
+
+  const container =
+    document.getElementById(
+      "variantsContainer"
+    );
+
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "variant-block";
+
+  div.dataset.variant =
+    variantes - 1;
+
+  div.innerHTML = `
+
+    <div class="variant-label">
+
+      <span>
+        Variante ${variantes}
+      </span>
+
+      <button
+        class="btn-variant-remove"
+        onclick="eliminarVariante(this)"
+      >
+        Eliminar
+      </button>
+
+    </div>
+
+    <textarea
+      id="plantilla-${variantes - 1}"
+      placeholder="Escribe otra variante..."
+    ></textarea>
+
+  `;
+
+  container.appendChild(div);
 }
-function abrirGmail(i) {
-  if (!data[i].correo) return;
-  window.open(buildGmailUrl(i), "_blank");
-  setTimeout(() => {
-    sentSet.add(i);
-    render();
-    irAlSiguiente(i);
-  }, 800);
+
+function eliminarVariante(button){
+
+  const block =
+    button.closest(".variant-block");
+
+  if(!block) return;
+
+  block.remove();
+
+  renumerarVariantes();
 }
-function copiarMensaje(i) {
-  const item = data[i];
-  const destinoCorreo = item.correo ? `\nCorreo: ${item.correo}` : "";
-  const texto = `Para: ${item.nombre} (${item.telefonoOriginal})${destinoCorreo}\n\n${item.msg}`;
-  navigator.clipboard.writeText(texto).then(() => {
-    const btn = document.getElementById(`copybtn-${i}`);
-    if (btn) {
-      const old = btn.textContent;
-      btn.textContent = "Copiado";
-      setTimeout(() => btn.textContent = old, 1200);
+
+function renumerarVariantes(){
+
+  const blocks =
+    document.querySelectorAll(
+      ".variant-block"
+    );
+
+  variantes = blocks.length;
+
+  blocks.forEach((block,index)=>{
+
+    const label =
+      block.querySelector(
+        ".variant-label span"
+      );
+
+    if(label){
+      label.textContent =
+        `Variante ${index + 1}`;
     }
+
+    const textarea =
+      block.querySelector("textarea");
+
+    if(textarea){
+      textarea.id =
+        `plantilla-${index}`;
+    }
+
   });
 }
-function undoSent(i) {
-  sentSet.delete(i);
+
+
+/* =========================
+   GENERAR MENSAJES
+========================= */
+
+function obtenerPlantillas(){
+
+  const result = [];
+
+  document
+    .querySelectorAll(
+      "#variantsContainer textarea"
+    )
+    .forEach(textarea=>{
+
+      const value =
+        textarea.value.trim();
+
+      if(value){
+        result.push(value);
+      }
+
+    });
+
+  return result;
+}
+
+function reemplazarVariables(template,x){
+
+  return template
+    .replaceAll(
+      "{NOMBRE}",
+      x.nombre || ""
+    )
+    .replaceAll(
+      "{TELEFONO}",
+      x.telefonoOriginal || ""
+    )
+    .replaceAll(
+      "{CORREO}",
+      x.correo || x.correoOriginal || ""
+    )
+    .replaceAll(
+      "{DIRECCION}",
+      x.direccion || ""
+    )
+    .replaceAll(
+      "{SALDO}",
+      x.saldo || ""
+    );
+}
+
+function generarMensajes(){
+
+  if(!data.length){
+
+    showNotice(
+      "Primero importa tus contactos."
+    );
+
+    return;
+  }
+
+  const plantillas =
+    obtenerPlantillas();
+
+  if(!plantillas.length){
+
+    showNotice(
+      "Escribe al menos una plantilla."
+    );
+
+    return;
+  }
+
+  data.forEach((x,index)=>{
+
+    const plantilla =
+      plantillas[index % plantillas.length];
+
+    x.msg =
+      reemplazarVariables(
+        plantilla,
+        x
+      );
+
+    if(x.status !== EST.SENT){
+      x.status = EST.PENDING;
+    }
+
+  });
+
+  document.getElementById("sendSection").style.display =
+    "block";
+
+  document.getElementById("summaryBox").style.display =
+    "block";
+
+  document.getElementById("summaryBox").textContent =
+    `✓ ${data.length} mensaje(s) preparados.`;
+
+  saveState();
+
+  render();
+
+  window.scrollTo({
+    top:document.getElementById("sendSection").offsetTop,
+    behavior:"smooth"
+  });
+}
+
+
+/* =========================
+   FILTROS
+========================= */
+
+function setFilter(value){
+
+  filter = value;
+
+  document
+    .querySelectorAll(".filter-btn")
+    .forEach(button=>{
+
+      button.classList.toggle(
+        "active",
+        button.dataset.filter === value
+      );
+
+    });
+
   render();
 }
-function render() {
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-  const enEspera = enEsperaDeEnvio();
-  let siguientePendiente = -1;
-  for (let j = 0; j < data.length; j++) {
-    if (!sentSet.has(j)) { siguientePendiente = j; break; }
+
+function matches(x){
+
+  const search =
+    String(
+      document.getElementById("searchInput")?.value || ""
+    )
+    .trim()
+    .toLowerCase();
+
+  const haystack = [
+    x.nombre,
+    x.telefonoOriginal,
+    x.correo,
+    x.correoOriginal,
+    x.direccion,
+    x.saldo
+  ]
+  .join(" ")
+  .toLowerCase();
+
+  if(search && !haystack.includes(search)){
+    return false;
   }
-  data.forEach((item, i) => {
-    const isSent = sentSet.has(i);
-    const isNext = i === siguientePendiente;
-    const card = document.createElement("div");
-    card.className = "card" + (isSent ? " sent" : "") + (isNext ? " next" : "");
-    card.id = `card-${i}`;
-    const nombreSafe = escapeHtml(item.nombre);
-    const telSafe = escapeHtml(item.telefonoOriginal);
-    const correoSafe = escapeHtml(item.correo);
-    const direccionSafe = escapeHtml(item.direccion);
-    const ref1Safe = escapeHtml(item.ref1);
-    const ref2Safe = escapeHtml(item.ref2);
-    const saldoSafe = escapeHtml(item.saldo);
-    const msgSafe = escapeHtml(item.msg);
-    const refs = [item.ref1 ? `Ref1: ${ref1Safe}` : "", item.ref2 ? `Ref2: ${ref2Safe}` : ""].filter(Boolean).join(" · ");
-    card.innerHTML = `
-      <div class="card-head">
-        <div class="num-badge">${isSent ? "✓" : i + 1}</div>
-        <div class="contact-info">
-          <div class="cname">${nombreSafe}</div>
-          <div class="cphone${item.valido ? "" : " badphone"}">${telSafe}${item.valido ? "" : " — número inválido"}</div>
-          ${item.correo ? `<div class="cemail">${correoSafe}</div>` : `<div class="cemail">Sin correo — solo WhatsApp/SMS</div>`}
-          ${item.direccion ? `<div class="caddress">📍 ${direccionSafe}</div>` : ""}
-          ${refs ? `<div class="caddress">👥 ${refs}</div>` : ""}
-          ${item.saldo ? `<div class="csaldo">💰 Saldo: ${saldoSafe}</div>` : ""}
-          ${item.urlUbicacion ? `<div class="clocation"><a href="${item.urlUbicacion}" target="_blank" rel="noopener">🗺️ Ver ubicación</a></div>` : ""}
+
+  if(filter === "all"){
+    return true;
+  }
+
+  return x.status === filter;
+}
+
+
+/* =========================
+   PROGRESO
+========================= */
+
+function updateProgress(){
+
+  const total = data.length;
+
+  const sent =
+    data.filter(
+      x => x.status === EST.SENT
+    ).length;
+
+  const opened =
+    data.filter(
+      x => x.status === EST.OPENED
+    ).length;
+
+  const pending =
+    data.filter(
+      x => x.status === EST.PENDING
+    ).length;
+
+  const errors =
+    data.filter(
+      x => x.status === EST.ERROR
+    ).length;
+
+  const percentage =
+    total
+      ? Math.round(
+          (sent / total) * 100
+        )
+      : 0;
+
+  document.getElementById(
+    "progressFill"
+  ).style.width =
+    percentage + "%";
+
+  document.getElementById(
+    "progressLabel"
+  ).textContent =
+    `${sent} enviados · ` +
+    `${opened} abiertos · ` +
+    `${pending} pendientes · ` +
+    `${errors} errores`;
+
+  document.getElementById(
+    "counters"
+  ).innerHTML = `
+
+    <span class="counter">
+      🟢 <b>${sent}</b> enviados
+    </span>
+
+    <span class="counter">
+      🟡 <b>${opened}</b> abiertos
+    </span>
+
+    <span class="counter">
+      ⚪ <b>${pending}</b> pendientes
+    </span>
+
+    <span class="counter">
+      🔴 <b>${errors}</b> errores
+    </span>
+
+  `;
+}
+
+
+/* =========================
+   MENSAJE / EDICIÓN
+========================= */
+
+function onEdit(i,el){
+
+  if(!data[i]) return;
+
+  data[i].msg =
+    el.value;
+
+  updateCharCount(
+    i,
+    el.value
+  );
+
+  saveState();
+}
+
+function updateCharCount(i,msg){
+
+  const element =
+    document.getElementById(
+      `charcount-${i}`
+    );
+
+  if(!element) return;
+
+  element.textContent =
+    msg.length > 1500
+      ? `⚠️ ${msg.length} caracteres`
+      : `${msg.length} caracteres`;
+
+  element.className =
+    "charcount" +
+    (
+      msg.length > 1500
+        ? " warn"
+        : ""
+    );
+}
+
+
+/* =========================
+   ENLACES
+========================= */
+
+function buildWaUrl(i){
+
+  return (
+    "https://wa.me/" +
+    data[i].telefono +
+    "?text=" +
+    encodeURIComponent(
+      data[i].msg
+    )
+  );
+}
+
+function buildSmsUrl(i){
+
+  const ios =
+    /iPhone|iPad|iPod/i.test(
+      navigator.userAgent
+    );
+
+  return (
+    "sms:+" +
+    data[i].telefono +
+    (
+      ios
+        ? "&"
+        : "?"
+    ) +
+    "body=" +
+    encodeURIComponent(
+      data[i].msg
+    )
+  );
+}
+
+function esEscritorio(){
+
+  return !/Android|iPhone|iPad|iPod|Mobile/i.test(
+    navigator.userAgent
+  );
+}
+
+function buildOutlookUrl(i){
+
+  const asunto =
+    document.getElementById(
+      "asunto"
+    ).value || "";
+
+  const x = data[i];
+
+  return (
+    "https://outlook.live.com/mail/0/deeplink/compose?" +
+    "to=" +
+    encodeURIComponent(x.correo) +
+    "&subject=" +
+    encodeURIComponent(asunto) +
+    "&body=" +
+    encodeURIComponent(x.msg)
+  );
+}
+
+function buildGmailUrl(i){
+
+  const asunto =
+    document.getElementById(
+      "asunto"
+    ).value || "";
+
+  const x = data[i];
+
+  return (
+    "https://mail.google.com/mail/?" +
+    "view=cm&fs=1" +
+    "to=" +
+    encodeURIComponent(x.correo) +
+    "&su=" +
+    encodeURIComponent(asunto) +
+    "&body=" +
+    encodeURIComponent(x.msg)
+  );
+}
+
+function abrirEnlace(url){
+
+  const a =
+    document.createElement("a");
+
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener";
+
+  a.style.display = "none";
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  a.remove();
+}
+
+
+/* =========================
+   ESPERA ENTRE WHATSAPP
+========================= */
+
+function iniciarEsperaEnvio(){
+
+  esperaEnvioHasta =
+    Date.now() + 3000;
+
+  actualizarEtiquetaEspera();
+
+  clearInterval(
+    esperaTimer
+  );
+
+  esperaTimer =
+    setInterval(()=>{
+
+      if(
+        Date.now() >=
+        esperaEnvioHasta
+      ){
+
+        clearInterval(
+          esperaTimer
+        );
+
+        esperaEnvioHasta = 0;
+
+        document.getElementById(
+          "waitLabel"
+        ).style.display = "none";
+
+        render();
+
+      }else{
+
+        actualizarEtiquetaEspera();
+
+      }
+
+    },250);
+}
+
+function actualizarEtiquetaEspera(){
+
+  const remaining =
+    Math.max(
+      0,
+      esperaEnvioHasta -
+      Date.now()
+    );
+
+  const seconds =
+    Math.ceil(
+      remaining / 1000
+    );
+
+  const element =
+    document.getElementById(
+      "waitLabel"
+    );
+
+  if(!seconds){
+
+    element.style.display =
+      "none";
+
+    return;
+  }
+
+  element.style.display =
+    "block";
+
+  element.textContent =
+    `⏳ Espera ${seconds} segundo(s) antes de abrir otro WhatsApp.`;
+}
+
+function enEsperaDeEnvio(){
+
+  return (
+    Date.now() <
+    esperaEnvioHasta
+  );
+}
+
+
+/* =========================
+   APERTURA DE CANALES
+========================= */
+
+function registrarApertura(i,channel){
+
+  if(!data[i]) return;
+
+  data[i].status =
+    EST.OPENED;
+
+  data[i].channel =
+    channel;
+
+  data[i].openedAt =
+    new Date().toISOString();
+
+  data[i].errorReason =
+    "";
+
+  saveState();
+
+  render();
+
+  irAlSiguiente(i);
+
+  if(channel === "WhatsApp"){
+    iniciarEsperaEnvio();
+  }
+}
+
+function enviarWhatsapp(i){
+
+  if(!data[i].valido){
+    showNotice(
+      "El teléfono no es válido."
+    );
+    return;
+  }
+
+  if(enEsperaDeEnvio()){
+    return;
+  }
+
+  const ios =
+    /iPhone|iPad|iPod/i.test(
+      navigator.userAgent
+    );
+
+  if(ios){
+    abrirEnlace(
+      buildWaUrl(i)
+    );
+  }else{
+    window.open(
+      buildWaUrl(i),
+      "_blank",
+      "noopener"
+    );
+  }
+
+  registrarApertura(
+    i,
+    "WhatsApp"
+  );
+}
+
+function enviarSms(i){
+
+  if(!data[i].valido){
+    showNotice(
+      "El teléfono no es válido."
+    );
+    return;
+  }
+
+  const x = data[i];
+
+  if(esEscritorio()){
+
+    copiarTexto(x.msg)
+
+      .then(()=>{
+
+        window.open(
+          "https://messages.google.com/web/conversations",
+          "_blank",
+          "noopener"
+        );
+
+        registrarApertura(
+          i,
+          "SMS"
+        );
+
+        showNotice(
+          `Mensaje copiado. Busca a ${x.nombre} (${x.telefonoOriginal}) en Google Messages, pega el texto y envíalo.`
+        );
+
+      })
+
+      .catch(()=>{
+
+        registrarApertura(
+          i,
+          "SMS"
+        );
+
+        showNotice(
+          'No se pudo copiar automáticamente. Usa "Copiar".'
+        );
+
+      });
+
+  }else{
+
+    abrirEnlace(
+      buildSmsUrl(i)
+    );
+
+    registrarApertura(
+      i,
+      "SMS"
+    );
+
+  }
+}
+
+function abrirOutlook(i){
+
+  if(!data[i].correo){
+    showNotice(
+      "Este contacto no tiene un correo válido."
+    );
+    return;
+  }
+
+  window.open(
+    buildOutlookUrl(i),
+    "_blank",
+    "noopener"
+  );
+
+  registrarApertura(
+    i,
+    "Outlook"
+  );
+}
+
+function abrirGmail(i){
+
+  if(!data[i].correo){
+    showNotice(
+      "Este contacto no tiene un correo válido."
+    );
+    return;
+  }
+
+  window.open(
+    buildGmailUrl(i),
+    "_blank",
+    "noopener"
+  );
+
+  registrarApertura(
+    i,
+    "Gmail"
+  );
+}
+
+
+/* =========================
+   PORTAPAPELES
+========================= */
+
+function copiarTexto(text){
+
+  if(
+    navigator.clipboard &&
+    navigator.clipboard.writeText
+  ){
+
+    return navigator.clipboard.writeText(
+      text
+    );
+  }
+
+  return Promise.reject(
+    new Error("clipboard")
+  );
+}
+
+function copiarMensaje(i){
+
+  const x = data[i];
+
+  const text =
+    `Para: ${x.nombre} (${x.telefonoOriginal})` +
+    (
+      x.correo
+        ? `\nCorreo: ${x.correo}`
+        : ""
+    ) +
+    `\n\n${x.msg}`;
+
+  copiarTexto(text)
+
+    .then(()=>{
+
+      showNotice(
+        "Mensaje copiado al portapapeles."
+      );
+
+    })
+
+    .catch(()=>{
+
+      showNotice(
+        "No se pudo acceder al portapapeles; copia el texto directamente de la tarjeta."
+      );
+
+    });
+}
+
+
+/* =========================
+   CAMBIAR ESTADO
+========================= */
+
+function marcarEnviado(i){
+
+  data[i].status =
+    EST.SENT;
+
+  data[i].sentAt =
+    new Date().toISOString();
+
+  data[i].errorAt =
+    "";
+
+  data[i].errorReason =
+    "";
+
+  saveState();
+
+  render();
+
+  irAlSiguiente(i);
+}
+
+function marcarError(i){
+
+  const reason =
+    prompt(
+      "Motivo del error (opcional):",
+      ""
+    );
+
+  data[i].status =
+    EST.ERROR;
+
+  data[i].errorAt =
+    new Date().toISOString();
+
+  data[i].errorReason =
+    reason || "Sin detalle";
+
+  saveState();
+
+  render();
+}
+
+function volverPendiente(i){
+
+  data[i].status =
+    EST.PENDING;
+
+  data[i].channel =
+    "";
+
+  data[i].openedAt =
+    "";
+
+  data[i].sentAt =
+    "";
+
+  data[i].errorAt =
+    "";
+
+  data[i].errorReason =
+    "";
+
+  saveState();
+
+  render();
+}
+
+function irAlSiguiente(i){
+
+  const next =
+    data.findIndex(
+      (x,j)=>
+        j > i &&
+        x.status !== EST.SENT
+    );
+
+  if(next >= 0){
+
+    const element =
+      document.getElementById(
+        `card-${next}`
+      );
+
+    if(element){
+
+      element.scrollIntoView({
+        behavior:"smooth",
+        block:"center"
+      });
+
+    }
+
+  }
+}
+
+
+/* =========================
+   ESTADO
+========================= */
+
+function statusLabel(x){
+
+  if(x.status === EST.SENT){
+
+    return (
+      `🟢 Enviado` +
+      (
+        x.sentAt
+          ? ` · ${formatDate(x.sentAt)}`
+          : ""
+      ) +
+      (
+        x.channel
+          ? ` · ${escapeHtml(x.channel)}`
+          : ""
+      )
+    );
+
+  }
+
+  if(x.status === EST.OPENED){
+
+    return (
+      `🟡 ${escapeHtml(x.channel || "Canal")} abierto` +
+      (
+        x.openedAt
+          ? ` · ${formatDate(x.openedAt)}`
+          : ""
+      ) +
+      " — confirma el envío cuando termines"
+    );
+
+  }
+
+  if(x.status === EST.ERROR){
+
+    return (
+      `🔴 Error` +
+      (
+        x.errorReason
+          ? `: ${escapeHtml(x.errorReason)}`
+          : ""
+      )
+    );
+
+  }
+
+  return "⚪ Pendiente";
+}
+
+
+/* =========================
+   RENDER
+========================= */
+
+function render(){
+
+  const list =
+    document.getElementById(
+      "list"
+    );
+
+  list.innerHTML = "";
+
+  const enEspera =
+    enEsperaDeEnvio();
+
+  const next =
+    data.findIndex(
+      x =>
+        x.status !== EST.SENT
+    );
+
+  const visibles =
+    data
+      .map((x,i)=>({
+        x,
+        i
+      }))
+      .filter(({x}) =>
+        matches(x)
+      );
+
+  if(!visibles.length){
+
+    list.innerHTML =
+      '<div class="empty">No hay contactos que coincidan con este filtro.</div>';
+
+    updateProgress();
+
+    return;
+  }
+
+  visibles.forEach(
+    ({x,i})=>{
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        `card ` +
+        `${x.status === EST.SENT ? "sent" : ""} ` +
+        `${x.status === EST.OPENED ? "opened" : ""} ` +
+        `${x.status === EST.ERROR ? "error-state" : ""} ` +
+        `${i === next ? "next" : ""}`;
+
+      card.id =
+        `card-${i}`;
+
+      const disabledSent =
+        x.status === EST.SENT;
+
+      const correoHtml =
+        x.correo
+          ? `
+            <div class="cemail">
+              ${escapeHtml(x.correo)}
+            </div>
+          `
+          : (
+            x.correoOriginal
+              ? `
+                <div class="cemail bademail">
+                  ${escapeHtml(x.correoOriginal)}
+                  — correo inválido
+                </div>
+              `
+              : `
+                <div class="cemail">
+                  Sin correo — Outlook/Gmail no disponibles
+                </div>
+              `
+          );
+
+      const refs = "";
+
+      const urlHtml =
+        x.urlUbicacion
+          ? `
+            <div class="caddress">
+              <a
+                href="${escapeHtml(x.urlUbicacion)}"
+                target="_blank"
+                rel="noopener"
+              >
+                🗺️ Ver ubicación
+              </a>
+            </div>
+          `
+          : "";
+
+      card.innerHTML = `
+
+        <div class="card-head">
+
+          <div class="num-badge">
+            ${
+              x.status === EST.SENT
+                ? "✓"
+                : i + 1
+            }
+          </div>
+
+          <div class="contact-info">
+
+            <div class="cname">
+              ${escapeHtml(x.nombre)}
+            </div>
+
+            <div class="cphone ${
+              x.valido
+                ? ""
+                : "badphone"
+            }">
+
+              ${escapeHtml(
+                x.telefonoOriginal
+              )}
+
+              ${
+                x.valido
+                  ? ""
+                  : " — número inválido"
+              }
+
+            </div>
+
+            ${correoHtml}
+
+            ${
+              x.direccion
+                ? `
+                  <div class="caddress">
+                    📍 ${escapeHtml(x.direccion)}
+                  </div>
+                `
+                : ""
+            }
+
+            ${
+              x.saldo
+                ? `
+                  <div class="caddress">
+                    💰 Saldo: ${escapeHtml(x.saldo)}
+                  </div>
+                `
+                : ""
+            }
+
+            ${refs}
+
+            ${urlHtml}
+
+          </div>
+
         </div>
-      </div>
-      <textarea class="msg-edit" oninput="onEdit(${i}, this)" ${isSent ? "disabled" : ""}>${msgSafe}</textarea>
-      <div class="charcount" id="charcount-${i}"></div>
-      <div class="card-actions">
-        ${isSent
-          ? `<button class="btn-sent" onclick="undoSent(${i})">Deshacer</button>`
-          : `<button class="btn-send" onclick="enviarWhatsapp(${i})" ${(item.valido && !enEspera) ? "" : "disabled"}>WhatsApp</button>
-             <button class="btn-sms" id="smsbtn-${i}" onclick="enviarSms(${i})" ${item.valido ? "" : "disabled"}>SMS</button>
-             <button class="btn-outlook" onclick="abrirOutlook(${i})" ${item.correo ? "" : "disabled"}>Outlook</button>
-             <button class="btn-gmail" onclick="abrirGmail(${i})" ${item.correo ? "" : "disabled"}>Gmail</button>
-             <button class="btn-copy" id="copybtn-${i}" onclick="copiarMensaje(${i})">Copiar</button>`
+
+        <div class="status-line ${
+          x.status === EST.SENT
+            ? "sent"
+            : ""
+        } ${
+          x.status === EST.ERROR
+            ? "error"
+            : ""
+        }">
+
+          ${statusLabel(x)}
+
+        </div>
+
+        <textarea
+          class="msg-edit"
+          oninput="onEdit(${i},this)"
+          ${disabledSent ? "disabled" : ""}
+        >${escapeHtml(x.msg)}</textarea>
+
+        <div
+          class="charcount"
+          id="charcount-${i}"
+        ></div>
+
+        <div class="card-actions">
+
+          ${
+            disabledSent
+
+              ? `
+
+                <button
+                  class="btn-reset"
+                  onclick="volverPendiente(${i})"
+                >
+                  ↩ Volver a pendiente
+                </button>
+
+              `
+
+              : `
+
+                <button
+                  class="btn-send"
+                  onclick="enviarWhatsapp(${i})"
+                  ${
+                    (
+                      !x.valido ||
+                      enEspera
+                    )
+                      ? "disabled"
+                      : ""
+                  }
+                >
+                  WhatsApp
+                </button>
+
+                <button
+                  class="btn-sms"
+                  onclick="enviarSms(${i})"
+                  ${
+                    !x.valido
+                      ? "disabled"
+                      : ""
+                  }
+                >
+                  SMS
+                </button>
+
+                <button
+                  class="btn-outlook"
+                  onclick="abrirOutlook(${i})"
+                  ${
+                    !x.correo
+                      ? "disabled"
+                      : ""
+                  }
+                >
+                  Outlook
+                </button>
+
+                <button
+                  class="btn-gmail"
+                  onclick="abrirGmail(${i})"
+                  ${
+                    !x.correo
+                      ? "disabled"
+                      : ""
+                  }
+                >
+                  Gmail
+                </button>
+
+                <button
+                  class="btn-copy"
+                  onclick="copiarMensaje(${i})"
+                >
+                  Copiar
+                </button>
+
+              `
+          }
+
+        </div>
+
+        ${
+          x.status === EST.OPENED
+            ? `
+
+              <div
+                class="card-actions"
+                style="margin-top:8px"
+              >
+
+                <button
+                  class="btn-confirm"
+                  onclick="marcarEnviado(${i})"
+                >
+                  ✓ Marcar como enviado
+                </button>
+
+                <button
+                  class="btn-error"
+                  onclick="marcarError(${i})"
+                >
+                  ⚠ Marcar error
+                </button>
+
+                <button
+                  class="btn-reset"
+                  onclick="volverPendiente(${i})"
+                >
+                  ↩ Volver a pendiente
+                </button>
+
+              </div>
+
+            `
+            : ""
         }
-      </div>
-    `;
-    list.appendChild(card);
-    updateCharCount(i, item.msg);
-  });
+
+        ${
+          x.status === EST.ERROR
+            ? `
+
+              <div
+                class="card-actions"
+                style="margin-top:8px"
+              >
+
+                <button
+                  class="btn-reset"
+                  onclick="volverPendiente(${i})"
+                >
+                  ↩ Intentar de nuevo
+                </button>
+
+              </div>
+
+            `
+            : ""
+        }
+
+      `;
+
+      list.appendChild(card);
+
+      updateCharCount(
+        i,
+        x.msg
+      );
+
+    }
+  );
+
   updateProgress();
 }
+
+
+/* =========================
+   NOTIFICACIONES
+========================= */
+
+function showNotice(msg){
+
+  const element =
+    document.getElementById(
+      "waitLabel"
+    );
+
+  element.style.display =
+    "block";
+
+  element.textContent =
+    "ℹ️ " + msg;
+
+  clearTimeout(
+    showNotice.timer
+  );
+
+  showNotice.timer =
+    setTimeout(()=>{
+
+      if(!enEsperaDeEnvio()){
+
+        element.style.display =
+          "none";
+
+      }else{
+
+        actualizarEtiquetaEspera();
+
+      }
+
+    },4500);
+}
+
+
+/* =========================
+   PERSISTENCIA
+========================= */
+
+function togglePersistencia(){
+
+  persistir =
+    document.getElementById(
+      "guardarProgreso"
+    ).checked;
+
+  try{
+
+    localStorage.setItem(
+      "mensajeria_persistir",
+      persistir ? "1" : "0"
+    );
+
+  }catch(e){}
+
+  if(persistir){
+
+    saveState();
+
+  }else{
+
+    try{
+
+      localStorage.removeItem(
+        "mensajeria_estado"
+      );
+
+    }catch(e){}
+
+  }
+}
+
+function saveState(){
+
+  if(!persistir) return;
+
+  try{
+
+    localStorage.setItem(
+      "mensajeria_estado",
+      JSON.stringify({
+
+        data,
+
+        asunto:
+          document.getElementById(
+            "asunto"
+          ).value,
+
+        codigoPais:
+          document.getElementById(
+            "codigoPais"
+          ).value,
+
+        updatedAt:
+          new Date().toISOString()
+
+      })
+    );
+
+  }catch(e){
+
+    console.warn(
+      "No se pudo guardar el progreso.",
+      e
+    );
+
+  }
+}
+
+function restoreState(){
+
+  try{
+
+    persistir =
+      localStorage.getItem(
+        "mensajeria_persistir"
+      ) === "1";
+
+    document.getElementById(
+      "guardarProgreso"
+    ).checked =
+      persistir;
+
+    if(!persistir) return;
+
+    const raw =
+      localStorage.getItem(
+        "mensajeria_estado"
+      );
+
+    if(!raw) return;
+
+    const state =
+      JSON.parse(raw);
+
+    if(
+      !state.data ||
+      !state.data.length
+    ){
+      return;
+    }
+
+    data =
+      state.data;
+
+    document.getElementById(
+      "asunto"
+    ).value =
+      state.asunto || "Aviso";
+
+    document.getElementById(
+      "codigoPais"
+    ).value =
+      state.codigoPais || "52";
+
+    document.getElementById(
+      "sendSection"
+    ).style.display =
+      "block";
+
+    document.getElementById(
+      "summaryBox"
+    ).style.display =
+      "block";
+
+    document.getElementById(
+      "summaryBox"
+    ).textContent =
+      `Sesión recuperada · ${data.length} contacto(s) · última actualización ${formatDate(state.updatedAt)}`;
+
+    render();
+
+  }catch(e){
+
+    console.warn(
+      "No se pudo recuperar la sesión.",
+      e
+    );
+
+  }
+}
+
+
+/* =========================
+   REPORTE
+========================= */
+
+function exportarReporte(){
+
+  if(!data.length){
+
+    showNotice(
+      "No hay datos para exportar."
+    );
+
+    return;
+  }
+
+  const rows =
+    data.map(x => ({
+
+      Nombre:
+        x.nombre,
+
+      Telefono:
+        x.telefonoOriginal,
+
+      TelefonoNormalizado:
+        x.telefono,
+
+      Correo:
+        x.correo ||
+        x.correoOriginal ||
+        "",
+
+      Canal:
+        x.channel || "",
+
+      Estado:
+        x.status === EST.SENT
+          ? "Enviado"
+          : x.status === EST.OPENED
+            ? "Abierto"
+            : x.status === EST.ERROR
+              ? "Error"
+              : "Pendiente",
+
+      Abierto:
+        x.openedAt
+          ? formatDate(x.openedAt)
+          : "",
+
+      Enviado:
+        x.sentAt
+          ? formatDate(x.sentAt)
+          : "",
+
+      Error:
+        x.errorAt
+          ? formatDate(x.errorAt)
+          : "",
+
+      Motivo:
+        x.errorReason || "",
+
+      Mensaje:
+        x.msg
+
+    }));
+
+  const worksheet =
+    XLSX.utils.json_to_sheet(
+      rows
+    );
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Reporte"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    `reporte-mensajes-${new Date()
+      .toISOString()
+      .slice(0,10)}.xlsx`
+  );
+}
+
+
+/* =========================
+   INICIO
+========================= */
+
+restoreState();
+
 </script>
-<div class="watermark">@hypergecko491</div>
+
 </body>
 </html>
