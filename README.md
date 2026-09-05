@@ -1,39 +1,30 @@
 # Envío de WhatsApp, SMS y Correo
 
-Herramienta para enviar mensajes personalizados por WhatsApp, SMS (celular
-y computadora), Correo y Gmail, cargando contactos desde Excel o pegándolos
-manualmente. Por ahora corre como servidor simple, sin login.
+Herramienta de preparación y gestión manual de mensajes personalizados para WhatsApp, SMS, Outlook y Gmail, cargando contactos desde Excel/CSV o pegándolos manualmente.
 
-## 1. Requisitos
+## Cambios principales
 
-- Node.js 18 o superior. Verifica con:
-  ```
-  node -v
-  ```
+- Estados reales por contacto: **Pendiente → Abierto → Enviado**, además de **Error**.
+- La aplicación ya no marca un contacto como enviado solamente por abrir WhatsApp, SMS, Outlook o Gmail.
+- Búsqueda y filtros por estado.
+- Guardado de progreso opcional en el navegador.
+- Exportación de reporte Excel con estado, canal y fechas.
+- Detección de encabezados comunes en Excel/CSV.
+- Validación visible de teléfonos y correos.
+- Variantes de mensaje distribuidas de forma equilibrada.
+- Servidor Express con headers básicos de seguridad y endpoint `/health`.
 
-## 2. Instalación local
+## Instalación local
 
 ```bash
 npm install
 npm start
 ```
 
-Abre **http://localhost:3000** en tu navegador.
+Abre `http://localhost:3000/app.html`.
 
-## 3. Cómo funciona el SMS en computadora
+## Nota de privacidad
 
-Google no ofrece una forma oficial de prellenar número y mensaje en
-messages.google.com/web (a diferencia de WhatsApp). El botón "SMS" en
-computadora copia el mensaje al portapapeles y abre Google Messages for
-Web — solo falta abrir la conversación de esa persona y pegar (Ctrl+V).
-En celular, sigue funcionando con todo prellenado automáticamente.
+Los contactos se procesan en el navegador y no se envían al servidor de esta aplicación. La opción de guardar progreso es voluntaria y utiliza `localStorage` del navegador.
 
-## 5. Estructura del proyecto
-```
-envio-mensajes/
-  server.js       -> servidor Express (solo sirve los archivos)
-  package.json
-  public/
-    app.html        -> la herramienta completa
-    index.html        -> redirige a app.html
-```
+La librería SheetJS utilizada para leer/escribir Excel se carga desde CDN.
